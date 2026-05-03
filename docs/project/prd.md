@@ -258,7 +258,8 @@ Failures share the same shape with an added `error` field.
 - **Telegram:** [grammY](https://grammy.dev) via [`@grammyjs/nestjs`](https://github.com/grammyjs/nestjs)
   - Decision: grammY is the only modern, actively-maintained Telegram framework for Node.js as of 2026-05. Telegraf has been unmaintained since 2025-01; `node-telegram-bot-api` is a thin event-emitter without middleware composition.
 - **Database:** Postgres 16+
-- **ORM/migrations:** Drizzle (TS-first, type-safe SQL, lightweight, works cleanly with NestJS as a plain provider). Switchable during scaffolding if a different choice is preferred.
+- **Query builder:** [Kysely](https://kysely.dev) — typed SQL builder, no model objects, stays close to SQL. Wired into NestJS as a plain provider.
+- **Migrations:** Kysely's built-in migration runner (raw SQL or `db.schema` builder; up/down files in `apps/tntfy/migrations/`).
 - **Bot transport:** long-polling for v1 (no public webhook, no domain prerequisite). Webhook mode behind a config flag — deferred.
 - **API docs:** `@nestjs/swagger` at `/docs`
 - **License:** MIT
