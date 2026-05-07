@@ -47,7 +47,7 @@ The `docs/` ↔ `src/` split is "anything that reads" vs. "anything that runs." 
 Requires Node.js 20+, pnpm 10+, and Docker.
 
 ```bash
-# 1. Start local Postgres (host port 5433 → container 5432)
+# 1. Start local Postgres (host port 6432 → container 5432)
 cd src/infra && docker compose up -d
 
 # 2. Install workspace dependencies

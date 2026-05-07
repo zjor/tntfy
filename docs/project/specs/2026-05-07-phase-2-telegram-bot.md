@@ -261,10 +261,10 @@ All checkboxes in roadmap §Phase 2 ticked, and:
    topic-remove - delete a topic and its history
    ```
 2. From `src/infra/`: `docker compose up -d`.
-3. From `src/tntfy/`: `DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app migrate`.
+3. From `src/tntfy/`: `DATABASE_URL=postgres://tntfy:tntfy@localhost:6432/tntfy pnpm --filter @tntfy/app migrate`.
 4. Run the app:
    ```bash
-   DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy \
+   DATABASE_URL=postgres://tntfy:tntfy@localhost:6432/tntfy \
    TELEGRAM_BOT_TOKEN=<from-botfather> \
    PUBLIC_BASE_URL=http://localhost:3000 \
    pnpm --filter @tntfy/app dev
