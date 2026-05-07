@@ -41,6 +41,13 @@ src/
 
 `docs/` = anything that reads, `src/` = anything that runs.
 
+## Workflow
+
+- **No git worktrees.** Use ordinary feature branches (`git checkout -b <name>`) for development. Do not run `git worktree add`, the `EnterWorktree` tool, or any worktree-creating skill (`superpowers:using-git-worktrees`).
+- The local Postgres (`src/infra/docker-compose.yml`) maps to host port **5433**, not 5432. Tests/dev use `postgres://tntfy:tntfy@localhost:5433/tntfy`.
+
 ## Status
 
-Phase 1 done — turborepo at `src/tntfy/`, NestJS app at `apps/tntfy/`, Kysely wired, four PRD tables migrated, `GET /v1/health` returns `{"status":"ok"}`. Phase 2 (Telegram bot) is next.
+Phase 1 done — turborepo at `src/tntfy/`, NestJS app at `apps/tntfy/`, Kysely wired, four PRD tables migrated, `GET /v1/health` returns `{"status":"ok"}`. Phase 2 (Telegram bot) is in progress on branch `phase-2-bot`.
+
+Phase 2 design: [docs/project/specs/2026-05-07-phase-2-telegram-bot.md](docs/project/specs/2026-05-07-phase-2-telegram-bot.md). Plan: [docs/project/plans/2026-05-07-phase-2-telegram-bot.md](docs/project/plans/2026-05-07-phase-2-telegram-bot.md).
