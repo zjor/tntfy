@@ -134,12 +134,14 @@ Mapping table:
 
 | Content-Type matches | `kind` | Method | `parse_mode` | Body type |
 |---|---|---|---|---|
-| `text/plain` | text | sendMessage | `none` | string |
+| `text/plain`, `application/x-www-form-urlencoded` | text | sendMessage | `none` | string |
 | `text/markdown` | text | sendMessage | `MarkdownV2` | string |
 | `text/html` | text | sendMessage | `HTML` | string |
 | `image/*` | image | sendPhoto | — | Buffer |
 | `application/octet-stream`, `audio/*`, `video/*` | file | sendDocument | — | Buffer |
-| anything else (incl. `application/json`, `application/x-www-form-urlencoded`, missing Content-Type, unrecognized types) | (throws `UnsupportedContentTypeError`) | — | — | — → **415** |
+| anything else (incl. `application/json`, missing Content-Type, unrecognized types) | (throws `UnsupportedContentTypeError`) | — | — | — → **415** |
+
+`application/x-www-form-urlencoded` is treated as plaintext because `curl -d "..."` defaults to that header — and the marquee one-liner from the PRD assumes raw text bodies. We forward the body verbatim to Telegram; it is *not* parsed as `key=value` form fields.
 
 `application/json` is **not** treated as a file upload — a user sending JSON to the publish endpoint almost certainly meant something else, and silently forwarding it to Telegram as a generic document is surprising. They get a clear 415 instead. If they actually want to send JSON as a document, they set `Content-Type: application/octet-stream`.
 

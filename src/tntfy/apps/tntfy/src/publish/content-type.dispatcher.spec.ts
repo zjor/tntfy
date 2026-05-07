@@ -17,6 +17,11 @@ describe('dispatch', () => {
     expect(r).toMatchObject({ kind: 'text', method: 'sendMessage', parseMode: 'HTML' });
   });
 
+  it('classifies application/x-www-form-urlencoded as plaintext (curl -d default)', () => {
+    const r = dispatch('application/x-www-form-urlencoded', 'Hello from tntfy');
+    expect(r).toEqual({ kind: 'text', method: 'sendMessage', parseMode: 'none', text: 'Hello from tntfy' });
+  });
+
   it('classifies image/png as image + sendPhoto', () => {
     const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
     const r = dispatch('image/png', buf);

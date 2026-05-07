@@ -21,7 +21,7 @@ async function bootstrap() {
   app.use(
     '/v1/publish',
     express.text({
-      type: ['text/plain', 'text/markdown', 'text/html'],
+      type: ['text/plain', 'text/markdown', 'text/html', 'application/x-www-form-urlencoded'],
       limit: '64kb',
     }),
   );

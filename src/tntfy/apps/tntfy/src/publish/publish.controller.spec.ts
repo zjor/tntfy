@@ -40,7 +40,7 @@ beforeEach(async () => {
   app.setGlobalPrefix('v1');
   app.use(
     '/v1/publish',
-    express.text({ type: ['text/plain', 'text/markdown', 'text/html'], limit: '64kb' }),
+    express.text({ type: ['text/plain', 'text/markdown', 'text/html', 'application/x-www-form-urlencoded'], limit: '64kb' }),
   );
   app.use(
     '/v1/publish',

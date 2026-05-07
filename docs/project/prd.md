@@ -66,10 +66,11 @@ Publishes a message to the topic identified by the path. The bearer token must b
 | Content-Type | Telegram method | Notes |
 |---|---|---|
 | `text/plain` | `sendMessage` | `parse_mode = none` |
+| `application/x-www-form-urlencoded` | `sendMessage` | Treated as plaintext (curl `-d` default); body forwarded verbatim, not parsed as form fields |
 | `text/markdown` | `sendMessage` | `parse_mode = MarkdownV2` |
 | `text/html` | `sendMessage` | `parse_mode = HTML` |
 | `image/*` | `sendPhoto` | jpeg, png, webp, gif |
-| `application/octet-stream` and others | `sendDocument` | Generic file |
+| `application/octet-stream`, `audio/*`, `video/*` | `sendDocument` | Generic file |
 
 **Success response (200):**
 

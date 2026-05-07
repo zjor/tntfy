@@ -16,7 +16,11 @@ function baseType(contentType: string): string {
 export function dispatch(contentType: string, body: string | Buffer): DispatchResult {
   const ct = baseType(contentType);
 
-  if (ct === 'text/plain') return { kind: 'text', method: 'sendMessage', parseMode: 'none', text: body as string };
+  // curl -d "..." defaults to application/x-www-form-urlencoded — treat it as
+  // plaintext so the marquee one-liner from the PRD just works.
+  if (ct === 'text/plain' || ct === 'application/x-www-form-urlencoded') {
+    return { kind: 'text', method: 'sendMessage', parseMode: 'none', text: body as string };
+  }
   if (ct === 'text/markdown') return { kind: 'text', method: 'sendMessage', parseMode: 'MarkdownV2', text: body as string };
   if (ct === 'text/html') return { kind: 'text', method: 'sendMessage', parseMode: 'HTML', text: body as string };
 
