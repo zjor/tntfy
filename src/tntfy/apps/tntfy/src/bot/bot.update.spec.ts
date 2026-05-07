@@ -132,3 +132,30 @@ describe('/topic-new-token', () => {
     expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
   });
 });
+
+describe('/topic-remove', () => {
+  it('replies with a confirmation prompt and inline keyboard', async () => {
+    process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
+    const { update, userId } = await setup();
+    let ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'deploys' });
+    await update.onTopicCreate(ctx as any);
+
+    ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'deploys' });
+    await update.onTopicRemove(ctx as any);
+    const [text, options] = ctx.reply.mock.calls[0];
+    expect(text).toMatch(/Delete topic 'deploys'/);
+    expect(options.reply_markup.inline_keyboard).toHaveLength(1);
+    const buttons = options.reply_markup.inline_keyboard[0];
+    expect(buttons[0].text).toMatch(/yes/i);
+    expect(buttons[1].text).toMatch(/cancel/i);
+    expect(buttons[0].callback_data).toMatch(/^topic-remove:y:/);
+    expect(buttons[1].callback_data).toMatch(/^topic-remove:n:/);
+  });
+
+  it('rejects unknown topic', async () => {
+    const { update, userId } = await setup();
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'missing' });
+    await update.onTopicRemove(ctx as any);
+    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
+  });
+});

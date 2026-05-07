@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Update, Command, Ctx } from '@grammyjs/nestjs';
+import { InlineKeyboard } from 'grammy';
 import { UsersService } from '../users/users.service';
 import { TopicsService } from '../topics/topics.service';
 import { TokensService } from '../topics/tokens.service';
@@ -86,6 +87,24 @@ export class BotUpdate {
       const newToken = await this.tokens.rotate(topic.id);
       const text = renderTokenRotatedMessage({ name, token: newToken, baseUrl: process.env.PUBLIC_BASE_URL! });
       await ctx.reply(text, { parse_mode: 'HTML' });
+    } catch (err) {
+      await ctx.reply(formatError(err));
+    }
+  }
+
+  @Command('topic-remove')
+  async onTopicRemove(@Ctx() ctx: AppContext) {
+    if (!ctx.user) return;
+    const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
+    try {
+      const topic = await this.topics.findByUserAndName(ctx.user.id, name);
+      const kb = new InlineKeyboard()
+        .text('Yes, delete', `topic-remove:y:${topic.id}`)
+        .text('Cancel', `topic-remove:n:${topic.id}`);
+      await ctx.reply(
+        `Delete topic '${name}'? This removes its token and all message history.`,
+        { reply_markup: kb },
+      );
     } catch (err) {
       await ctx.reply(formatError(err));
     }
