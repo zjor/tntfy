@@ -28,5 +28,14 @@ export class BotModule implements OnModuleInit {
 
   onModuleInit() {
     this.bot.use(this.ensureUser.middleware());
+    this.bot.catch((err) => {
+      console.error(
+        {
+          err: err?.error,
+          update_id: err?.ctx?.update?.update_id,
+        },
+        'unhandled-bot-error',
+      );
+    });
   }
 }
