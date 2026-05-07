@@ -37,18 +37,19 @@ beforeEach(async () => {
     .compile();
 
   app = mod.createNestApplication();
+  app.setGlobalPrefix('v1');
   app.use(
-    '/publish',
+    '/v1/publish',
     express.text({ type: ['text/plain', 'text/markdown', 'text/html'], limit: '64kb' }),
   );
   app.use(
-    '/publish',
+    '/v1/publish',
     express.raw({
       type: ['application/octet-stream', 'image/*', 'audio/*', 'video/*'],
       limit: '50mb',
     }),
   );
-  app.use('/publish', (err: any, _req: any, res: any, next: any) => {
+  app.use('/v1/publish', (err: any, _req: any, res: any, next: any) => {
     if (err?.type === 'entity.too.large' || err?.status === 413) {
       return res.status(413).json({ error: 'payload_too_large' });
     }
@@ -67,7 +68,7 @@ beforeEach(async () => {
 describe('POST /publish/:topic — happy paths', () => {
   it('text/plain → sendMessage parse_mode none → 200', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('Backup successful');
@@ -85,7 +86,7 @@ describe('POST /publish/:topic — happy paths', () => {
 
   it('text/markdown → MarkdownV2', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/markdown')
       .send('hello *bold*');
@@ -95,7 +96,7 @@ describe('POST /publish/:topic — happy paths', () => {
 
   it('text/html → HTML', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/html')
       .send('<b>x</b>');
@@ -105,7 +106,7 @@ describe('POST /publish/:topic — happy paths', () => {
 
   it('image/png → sendPhoto with provided Filename', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'image/png')
       .set('Filename', 'screenshot.png')
@@ -123,7 +124,7 @@ describe('POST /publish/:topic — happy paths', () => {
 
   it('application/octet-stream → sendDocument with generated filename', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/octet-stream')
       .send(Buffer.from([1, 2, 3, 4]));
@@ -140,7 +141,7 @@ import { TelegramBlockedError, TelegramThrottledError, TelegramFailedError, Form
 describe('POST /publish/:topic — error paths', () => {
   it('401 missing_token when no Authorization header', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Content-Type', 'text/plain')
       .send('hi');
     expect(res.status).toBe(401);
@@ -149,7 +150,7 @@ describe('POST /publish/:topic — error paths', () => {
 
   it('401 invalid_token when token does not exist', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', 'Bearer tk_unknownnnnnnnnnnnnnnnn')
       .set('Content-Type', 'text/plain')
       .send('hi');
@@ -159,7 +160,7 @@ describe('POST /publish/:topic — error paths', () => {
 
   it('404 topic_not_found when path topic differs', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/other-topic')
+      .post('/v1/publish/other-topic')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('hi');
@@ -169,7 +170,7 @@ describe('POST /publish/:topic — error paths', () => {
 
   it('400 empty_body on empty text', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('');
@@ -180,7 +181,7 @@ describe('POST /publish/:topic — error paths', () => {
   it('413 payload_too_large for text over 4096 chars', async () => {
     const huge = 'a'.repeat(5000);
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send(huge);
@@ -191,7 +192,7 @@ describe('POST /publish/:topic — error paths', () => {
   it('413 payload_too_large from express body parser at 64kb', async () => {
     const huge = 'a'.repeat(70 * 1024);
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send(huge);
@@ -201,7 +202,7 @@ describe('POST /publish/:topic — error paths', () => {
 
   it('415 unsupported_content_type for application/json', async () => {
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'application/json')
       .send({ text: 'hi' });
@@ -212,7 +213,7 @@ describe('POST /publish/:topic — error paths', () => {
   it('502 telegram_blocked when Telegram returns 403', async () => {
     sender.sendText.mockRejectedValueOnce(new TelegramBlockedError());
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('hi');
@@ -227,29 +228,37 @@ describe('POST /publish/:topic — error paths', () => {
   it('502 telegram_throttled with retry_after', async () => {
     sender.sendText.mockRejectedValueOnce(new TelegramThrottledError(30));
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('hi');
     expect(res.status).toBe(502);
     expect(res.body).toEqual({ error: 'telegram_throttled', retry_after: 30 });
+    const db = app.get<any>(KYSELY);
+    const rows = await db.selectFrom('topic_messages').selectAll().where('topic_id', '=', topicId).execute();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ status: 'failed', error: 'telegram_throttled' });
   });
 
   it('502 telegram_failed with reason', async () => {
     sender.sendText.mockRejectedValueOnce(new TelegramFailedError('boom'));
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/plain')
       .send('hi');
     expect(res.status).toBe(502);
     expect(res.body).toEqual({ error: 'telegram_failed', reason: 'boom' });
+    const db = app.get<any>(KYSELY);
+    const rows = await db.selectFrom('topic_messages').selectAll().where('topic_id', '=', topicId).execute();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ status: 'failed', error: 'telegram_failed' });
   });
 
   it('400 format_error when Telegram rejects parse', async () => {
     sender.sendText.mockRejectedValueOnce(new FormatError("can't parse entities"));
     const res = await request(app.getHttpServer())
-      .post('/publish/deploys')
+      .post('/v1/publish/deploys')
       .set('Authorization', `Bearer ${token}`)
       .set('Content-Type', 'text/markdown')
       .send('bad *markdown');

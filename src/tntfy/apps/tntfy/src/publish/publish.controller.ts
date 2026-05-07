@@ -17,6 +17,7 @@ const TG_TEXT_MAX = 4096;
 const TG_CAPTION_MAX = 1024;
 
 @Controller('publish')
+@UseGuards(AuthGuard)
 @UseFilters(PublishExceptionFilter)
 export class PublishController {
   constructor(
@@ -27,7 +28,6 @@ export class PublishController {
 
   @Post(':topic')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
   async publish(
     @CurrentTopic() ctx: TopicContext,
     @Headers() headers: Record<string, string>,
@@ -89,8 +89,9 @@ export class PublishController {
 
     // image or file
     const bytes = result.bytes;
-    const captionLen = caption ? Buffer.byteLength(caption) : 0;
-    if (captionLen > TG_CAPTION_MAX) throw new PayloadTooLargeError(`caption > ${TG_CAPTION_MAX}`);
+    if (caption && caption.length > TG_CAPTION_MAX) {
+      throw new PayloadTooLargeError(`caption > ${TG_CAPTION_MAX}`);
+    }
     const filename = resolveFilename({ filename: filenameHeader, mimeType: result.mimeType });
     const kind = result.kind;
 
