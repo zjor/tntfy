@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Update, Command, Ctx } from '@grammyjs/nestjs';
 import { UsersService } from '../users/users.service';
 import { TopicsService } from '../topics/topics.service';
-import { renderTopicCreatedMessage } from './snippets';
+import { TokensService } from '../topics/tokens.service';
+import { renderTopicCreatedMessage, renderTokenRotatedMessage } from './snippets';
 import { formatError } from './errors';
 import type { AppContext } from './context';
 
@@ -26,6 +27,7 @@ export class BotUpdate {
   constructor(
     private readonly users: UsersService,
     private readonly topics: TopicsService,
+    private readonly tokens: TokensService,
   ) {}
 
   @Command('start')
@@ -73,5 +75,19 @@ export class BotUpdate {
     }
     const lines = list.map((t) => `• ${t.name} — created ${new Date(t.created_at as any).toISOString()}`);
     await ctx.reply(['Your topics:', ...lines].join('\n'));
+  }
+
+  @Command('topic-new-token')
+  async onTopicNewToken(@Ctx() ctx: AppContext) {
+    if (!ctx.user) return;
+    const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
+    try {
+      const topic = await this.topics.findByUserAndName(ctx.user.id, name);
+      const newToken = await this.tokens.rotate(topic.id);
+      const text = renderTokenRotatedMessage({ name, token: newToken, baseUrl: process.env.PUBLIC_BASE_URL! });
+      await ctx.reply(text, { parse_mode: 'HTML' });
+    } catch (err) {
+      await ctx.reply(formatError(err));
+    }
   }
 }

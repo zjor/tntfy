@@ -109,3 +109,26 @@ describe('/topic-list', () => {
     expect(text.indexOf('second')).toBeLessThan(text.indexOf('first'));
   });
 });
+
+describe('/topic-new-token', () => {
+  it('rotates the token and replies with the new one', async () => {
+    process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
+    const { update, userId } = await setup();
+    let ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'deploys' });
+    await update.onTopicCreate(ctx as any);
+    const oldToken = (ctx.reply.mock.calls[0][0] as string).match(/tk_[A-Za-z0-9_-]{24}/)![0];
+
+    ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'deploys' });
+    await update.onTopicNewToken(ctx as any);
+    const text = ctx.reply.mock.calls[0][0] as string;
+    const newToken = text.match(/tk_[A-Za-z0-9_-]{24}/)![0];
+    expect(newToken).not.toBe(oldToken);
+  });
+
+  it('rejects unknown topic with helpful message', async () => {
+    const { update, userId } = await setup();
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'missing' });
+    await update.onTopicNewToken(ctx as any);
+    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
+  });
+});
