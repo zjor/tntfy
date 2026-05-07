@@ -131,6 +131,28 @@ describe('/topic-new-token', () => {
     await update.onTopicNewToken(ctx as any);
     expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
   });
+
+  it('/topic-new-token rejects invalid name format', async () => {
+    const { update, userId } = await setup();
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'BAD_NAME' });
+    await update.onTopicNewToken(ctx as any);
+    expect(ctx.reply.mock.calls[0][0]).toMatch(/topic names must match/);
+  });
+});
+
+describe('error rethrow', () => {
+  it('rethrows non-domain errors so bot.catch can log them', async () => {
+    const { update, userId } = await setup();
+    // Force a non-domain error by stubbing topics.create to reject with a generic error
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'deploys' });
+    const original = (update as any).topics.create;
+    (update as any).topics.create = async () => {
+      throw new Error('db is on fire');
+    };
+    await expect(update.onTopicCreate(ctx as any)).rejects.toThrow('db is on fire');
+    expect(ctx.reply.mock.calls[0][0]).toBe('something went wrong, try again later');
+    (update as any).topics.create = original;
+  });
 });
 
 describe('/topic-remove', () => {
@@ -157,5 +179,12 @@ describe('/topic-remove', () => {
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'missing' });
     await update.onTopicRemove(ctx as any);
     expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
+  });
+
+  it('/topic-remove rejects invalid name format', async () => {
+    const { update, userId } = await setup();
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'BAD_NAME' });
+    await update.onTopicRemove(ctx as any);
+    expect(ctx.reply.mock.calls[0][0]).toMatch(/topic names must match/);
   });
 });

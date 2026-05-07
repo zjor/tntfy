@@ -78,23 +78,29 @@ export class TopicsService {
   }
 
   async removeById(userId: string, topicId: string) {
-    const topic = await this.findByUserAndId(userId, topicId);
-    const cascaded = await this.db.transaction().execute(async (trx) => {
+    const result = await this.db.transaction().execute(async (trx) => {
       const counted = await trx
         .selectFrom('topic_messages')
         .select((eb) => eb.fn.countAll<number>().as('n'))
-        .where('topic_id', '=', topic.id)
+        .where('topic_id', '=', topicId)
         .executeTakeFirstOrThrow();
-      await trx.deleteFrom('topics').where('id', '=', topic.id).execute();
-      return Number(counted.n);
+      const deleted = await trx
+        .deleteFrom('topics')
+        .where('id', '=', topicId)
+        .where('user_id', '=', userId)
+        .returningAll()
+        .executeTakeFirst();
+      if (!deleted) return null;
+      return { name: deleted.name, cascaded_messages_count: Number(counted.n) };
     });
+    if (!result) throw new TopicNotFoundError(topicId);
     this.audit.log({
       op: 'topic.delete',
       user_id: userId,
-      topic_id: topic.id,
-      name: topic.name,
-      cascaded_messages_count: cascaded,
+      topic_id: topicId,
+      name: result.name,
+      cascaded_messages_count: result.cascaded_messages_count,
     });
-    return { cascaded_messages_count: cascaded, name: topic.name };
+    return result;
   }
 }

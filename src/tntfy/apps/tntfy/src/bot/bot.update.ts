@@ -5,7 +5,8 @@ import { UsersService } from '../users/users.service';
 import { TopicsService } from '../topics/topics.service';
 import { TokensService } from '../topics/tokens.service';
 import { renderTopicCreatedMessage, renderTokenRotatedMessage } from './snippets';
-import { formatError } from './errors';
+import { formatError, isKnownDomainError } from './errors';
+import { validateTopicName } from '../topics/topic-name';
 import type { AppContext } from './context';
 
 const HELP_TEXT = [
@@ -63,6 +64,7 @@ export class BotUpdate {
       await ctx.reply(text, { parse_mode: 'HTML' });
     } catch (err) {
       await ctx.reply(formatError(err));
+      if (!isKnownDomainError(err)) throw err;
     }
   }
 
@@ -83,12 +85,14 @@ export class BotUpdate {
     if (!ctx.user) return;
     const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
     try {
+      validateTopicName(name);
       const topic = await this.topics.findByUserAndName(ctx.user.id, name);
       const newToken = await this.tokens.rotate(topic.id);
       const text = renderTokenRotatedMessage({ name, token: newToken, baseUrl: process.env.PUBLIC_BASE_URL! });
       await ctx.reply(text, { parse_mode: 'HTML' });
     } catch (err) {
       await ctx.reply(formatError(err));
+      if (!isKnownDomainError(err)) throw err;
     }
   }
 
@@ -97,6 +101,7 @@ export class BotUpdate {
     if (!ctx.user) return;
     const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
     try {
+      validateTopicName(name);
       const topic = await this.topics.findByUserAndName(ctx.user.id, name);
       const kb = new InlineKeyboard()
         .text('Yes, delete', `topic-remove:y:${topic.id}`)
@@ -107,6 +112,7 @@ export class BotUpdate {
       );
     } catch (err) {
       await ctx.reply(formatError(err));
+      if (!isKnownDomainError(err)) throw err;
     }
   }
 }

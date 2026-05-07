@@ -17,3 +17,11 @@ export function formatError(err: unknown): string {
   }
   return 'something went wrong, try again later';
 }
+
+export function isKnownDomainError(err: unknown): boolean {
+  return (
+    err instanceof InvalidTopicNameError ||
+    err instanceof DuplicateTopicError ||
+    err instanceof TopicNotFoundError
+  );
+}

@@ -1,5 +1,6 @@
 import { Module, OnModuleInit } from '@nestjs/common';
 import { NestjsGrammyModule, InjectBot } from '@grammyjs/nestjs';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Bot } from 'grammy';
 import { UsersModule } from '../users/users.module';
 import { TopicsModule } from '../topics/topics.module';
@@ -24,12 +25,13 @@ export class BotModule implements OnModuleInit {
   constructor(
     @InjectBot() private readonly bot: Bot<AppContext>,
     private readonly ensureUser: EnsureUserMiddleware,
+    @InjectPinoLogger(BotModule.name) private readonly logger: PinoLogger,
   ) {}
 
   onModuleInit() {
     this.bot.use(this.ensureUser.middleware());
     this.bot.catch((err) => {
-      console.error(
+      this.logger.error(
         {
           err: err?.error,
           update_id: err?.ctx?.update?.update_id,
