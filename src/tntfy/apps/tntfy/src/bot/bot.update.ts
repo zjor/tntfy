@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Update, Command, Ctx } from '@grammyjs/nestjs';
 import { UsersService } from '../users/users.service';
+import { TopicsService } from '../topics/topics.service';
+import { renderTopicCreatedMessage } from './snippets';
+import { formatError } from './errors';
 import type { AppContext } from './context';
 
 const HELP_TEXT = [
@@ -20,7 +23,10 @@ const HELP_TEXT = [
 @Update()
 @Injectable()
 export class BotUpdate {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly topics: TopicsService,
+  ) {}
 
   @Command('start')
   async onStart(@Ctx() ctx: AppContext) {
@@ -38,5 +44,22 @@ export class BotUpdate {
   @Command('help')
   async onHelp(@Ctx() ctx: AppContext) {
     await ctx.reply(HELP_TEXT);
+  }
+
+  @Command('topic-create')
+  async onTopicCreate(@Ctx() ctx: AppContext) {
+    if (!ctx.user) return;
+    const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
+    try {
+      const { token } = await this.topics.create(ctx.user.id, name);
+      const text = renderTopicCreatedMessage({
+        name,
+        token,
+        baseUrl: process.env.PUBLIC_BASE_URL!,
+      });
+      await ctx.reply(text, { parse_mode: 'HTML' });
+    } catch (err) {
+      await ctx.reply(formatError(err));
+    }
   }
 }
