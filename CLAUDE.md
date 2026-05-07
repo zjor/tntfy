@@ -5,6 +5,7 @@
 ## Source of truth
 
 - **PRD (v1 scope, full design):** [docs/project/prd.md](docs/project/prd.md)
+- **Architecture (modules, ERD, flows):** [docs/project/architecture.md](docs/project/architecture.md)
 - **Roadmap (phased build):** [docs/process/roadmap.md](docs/process/roadmap.md)
 
 Read the PRD before changing anything structural. The roadmap is the working checklist.
@@ -42,4 +43,4 @@ src/
 
 ## Status
 
-Pre-code. Repo is initialized; no `src/tntfy/` scaffolding yet. Start at Phase 1 of the roadmap.
+Phase 1 done — turborepo at `src/tntfy/`, NestJS app at `apps/tntfy/`, Kysely wired, four PRD tables migrated, `GET /v1/health` returns `{"status":"ok"}`. Phase 2 (Telegram bot) is next.
