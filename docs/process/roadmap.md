@@ -25,6 +25,8 @@ Phased build:
 
 ### Phase 2 — Telegram bot (control plane)
 
+Design spec: [`docs/project/specs/2026-05-07-phase-2-telegram-bot.md`](../project/specs/2026-05-07-phase-2-telegram-bot.md)
+
 - [ ] Install `grammy` and `@grammyjs/nestjs`; wire long-polling
 - [ ] `/start` — create-or-get user
 - [ ] `/help` — list commands
@@ -58,7 +60,6 @@ Items below are **not** in v1 — captured here so they don't get lost.
 - Web dashboard for users who prefer GUI to slash commands
 - Multi-subscriber topics: `/link <topic>` to forward a topic to a group/channel
 - Per-token rate limits (likely the first need once v1 sees real traffic)
-- Webhook bot transport with HTTPS termination, behind a config flag
 - Server-side retry policy for transient Telegram failures
 - Message retention controls (TTL or row-cap per topic)
 

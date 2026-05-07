@@ -260,7 +260,7 @@ Failures share the same shape with an added `error` field.
 - **Database:** Postgres 16+
 - **Query builder:** [Kysely](https://kysely.dev) — typed SQL builder, no model objects, stays close to SQL. Wired into NestJS as a plain provider.
 - **Migrations:** Kysely's built-in migration runner (raw SQL or `db.schema` builder; up/down files in `apps/tntfy/migrations/`).
-- **Bot transport:** long-polling for v1 (no public webhook, no domain prerequisite). Webhook mode behind a config flag — deferred.
+- **Bot transport:** long-polling. Permanent — webhook mode is not on the roadmap.
 - **API docs:** `@nestjs/swagger` at `/docs`
 - **License:** MIT
 
@@ -308,7 +308,6 @@ The NestJS app reads from environment variables:
 - Web dashboard / TWA for users who prefer GUI to slash commands
 - Multi-subscriber topics: group/channel forwarding via `/link <topic>`
 - Per-token rate limits (likely first when v1 sees real traffic)
-- Webhook bot transport with HTTPS termination
 - Server-side retry policy for transient Telegram failures
 - Optional message TTL / size-bounded retention
 - Helm chart and `docker-compose.prod.yml` for self-hosters
