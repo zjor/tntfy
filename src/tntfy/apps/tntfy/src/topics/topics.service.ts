@@ -77,6 +77,30 @@ export class TopicsService {
     return row;
   }
 
+  async lookupByToken(token: string) {
+    const row = await this.db
+      .selectFrom('topic_tokens as tk')
+      .innerJoin('topics as tp', 'tp.id', 'tk.topic_id')
+      .innerJoin('users as u', 'u.id', 'tp.user_id')
+      .select([
+        'tk.id as token_id',
+        'tp.id as topic_id',
+        'tp.name as topic_name',
+        'u.id as user_id',
+        'u.ext_id as chat_id',
+      ])
+      .where('tk.token', '=', token)
+      .executeTakeFirst();
+    if (!row) return null;
+    return {
+      token_id: row.token_id,
+      topic_id: row.topic_id,
+      topic_name: row.topic_name,
+      user_id: row.user_id,
+      chat_id: Number(row.chat_id),
+    };
+  }
+
   async removeById(userId: string, topicId: string) {
     const result = await this.db.transaction().execute(async (trx) => {
       const counted = await trx

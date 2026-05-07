@@ -110,6 +110,28 @@ describe('TopicsService.findByUserAndId', () => {
   });
 });
 
+describe('TopicsService.lookupByToken', () => {
+  it('returns topic + user context when token exists', async () => {
+    const { mod, topics, userId } = await setup();
+    const { topic, token } = await topics.create(userId, 'deploys');
+    const found = await topics.lookupByToken(token);
+    expect(found).not.toBeNull();
+    expect(found!.topic_id).toBe(topic.id);
+    expect(found!.topic_name).toBe('deploys');
+    expect(found!.user_id).toBe(userId);
+    expect(typeof found!.chat_id).toBe('number');
+    const users = mod.get(UsersService);
+    const u = await users.createOrGet({ id: 1, username: null, first_name: null, last_name: null });
+    expect(found!.chat_id).toBe(Number(u.ext_id));
+  });
+
+  it('returns null when token is unknown', async () => {
+    const { topics } = await setup();
+    const found = await topics.lookupByToken('tk_unknownnnnnnnnnnnnnnnn');
+    expect(found).toBeNull();
+  });
+});
+
 describe('TopicsService.removeById', () => {
   it('hard-deletes topic and cascades tokens + messages', async () => {
     const { topics, userId, mod } = await setup();
