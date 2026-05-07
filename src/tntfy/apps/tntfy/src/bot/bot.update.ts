@@ -62,4 +62,16 @@ export class BotUpdate {
       await ctx.reply(formatError(err));
     }
   }
+
+  @Command('topic-list')
+  async onTopicList(@Ctx() ctx: AppContext) {
+    if (!ctx.user) return;
+    const list = await this.topics.listByUser(ctx.user.id);
+    if (list.length === 0) {
+      await ctx.reply('You have no topics yet. Create one with /topic-create <name>.');
+      return;
+    }
+    const lines = list.map((t) => `• ${t.name} — created ${new Date(t.created_at as any).toISOString()}`);
+    await ctx.reply(['Your topics:', ...lines].join('\n'));
+  }
 }

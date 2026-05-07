@@ -86,3 +86,26 @@ describe('/topic-create', () => {
     expect(ctx.reply.mock.calls[0][0]).toBe("you already have a topic 'deploys'");
   });
 });
+
+describe('/topic-list', () => {
+  it('replies with empty-state hint when none', async () => {
+    const { update, userId } = await setup();
+    const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 } });
+    await update.onTopicList(ctx as any);
+    expect(ctx.reply.mock.calls[0][0]).toMatch(/no topics/i);
+  });
+
+  it('lists topics newest first', async () => {
+    process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
+    const { update, userId } = await setup();
+    let ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'first' });
+    await update.onTopicCreate(ctx as any);
+    await new Promise((r) => setTimeout(r, 5));
+    ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'second' });
+    await update.onTopicCreate(ctx as any);
+    ctx = makeStubCtx({ user: { id: userId, ext_id: 100 } });
+    await update.onTopicList(ctx as any);
+    const text = ctx.reply.mock.calls[0][0] as string;
+    expect(text.indexOf('second')).toBeLessThan(text.indexOf('first'));
+  });
+});
