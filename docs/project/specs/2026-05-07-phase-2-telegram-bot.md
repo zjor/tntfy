@@ -248,3 +248,26 @@ All checkboxes in roadmap §Phase 2 ticked, and:
 - `pnpm --filter @tntfy/app test` passes.
 - Running the bot locally against a real BotFather token, the full user journey from PRD §"User journey" works end-to-end in Telegram.
 - Every command emits the audit log line documented in PRD §"Audit logging".
+
+## Smoke test (manual, post-implementation)
+
+1. Get a bot token from `@BotFather` and set commands via `/setcommands`:
+   ```
+   start - register or refresh your account
+   help - list commands
+   topic-create - create a topic and get a curl snippet
+   topic-list - list your topics
+   topic-new-token - rotate a topic's token
+   topic-remove - delete a topic and its history
+   ```
+2. From `src/infra/`: `docker compose up -d`.
+3. From `src/tntfy/`: `DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app migrate`.
+4. Run the app:
+   ```bash
+   DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy \
+   TELEGRAM_BOT_TOKEN=<from-botfather> \
+   PUBLIC_BASE_URL=http://localhost:3000 \
+   pnpm --filter @tntfy/app dev
+   ```
+5. In Telegram: `/start` → `/help` → `/topic-create deploys` → copy the curl snippet (publishing returns 404 for now — the publish endpoint lands in Phase 3) → `/topic-list` → `/topic-new-token deploys` → `/topic-remove deploys` → confirm via inline button → `/topic-list` (now empty).
+6. Confirm the app log emits one structured `audit` line per state-changing command (per PRD §"Audit logging").
