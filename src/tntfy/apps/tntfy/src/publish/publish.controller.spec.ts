@@ -78,7 +78,7 @@ describe('POST /publish/:topic — happy paths', () => {
       telegram_message_id: 100,
     });
     expect(res.body.id).toMatch(/^[A-Za-z0-9_-]{21}$/);
-    expect(sender.sendText).toHaveBeenCalledWith(100, 'Backup successful', 'none');
+    expect(sender.sendText).toHaveBeenCalledWith(100, 'deploys\n\nBackup successful', 'none');
     const db = app.get<any>(KYSELY);
     const row = await db.selectFrom('topic_messages').selectAll().where('id', '=', res.body.id).executeTakeFirstOrThrow();
     expect(row).toMatchObject({ kind: 'text', format: 'text', status: 'delivered', text_body: 'Backup successful' });
@@ -91,7 +91,7 @@ describe('POST /publish/:topic — happy paths', () => {
       .set('Content-Type', 'text/markdown')
       .send('hello *bold*');
     expect(res.status).toBe(200);
-    expect(sender.sendText).toHaveBeenCalledWith(100, 'hello *bold*', 'MarkdownV2');
+    expect(sender.sendText).toHaveBeenCalledWith(100, '*deploys*\n\nhello *bold*', 'MarkdownV2');
   });
 
   it('text/html → HTML', async () => {
@@ -101,7 +101,7 @@ describe('POST /publish/:topic — happy paths', () => {
       .set('Content-Type', 'text/html')
       .send('<b>x</b>');
     expect(res.status).toBe(200);
-    expect(sender.sendText).toHaveBeenCalledWith(100, '<b>x</b>', 'HTML');
+    expect(sender.sendText).toHaveBeenCalledWith(100, '<b>deploys</b>\n\n<b>x</b>', 'HTML');
   });
 
   it('image/png → sendPhoto with provided Filename', async () => {
@@ -118,7 +118,7 @@ describe('POST /publish/:topic — happy paths', () => {
       100,
       expect.any(Buffer),
       'screenshot.png',
-      'see attached',
+      'deploys\nsee attached',
     );
   });
 

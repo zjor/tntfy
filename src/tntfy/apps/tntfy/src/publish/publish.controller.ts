@@ -9,6 +9,7 @@ import { CurrentTopic } from './current-topic.decorator';
 import type { TopicContext } from './topic-context';
 import { dispatch } from './content-type.dispatcher';
 import { resolveFilename } from './filename';
+import { formatText, formatCaption } from './format-message';
 import { PublishExceptionFilter } from './error.filter';
 import { EmptyBodyError, PayloadTooLargeError } from './errors';
 import { AuditLogger } from '../logging/audit.service';
@@ -44,14 +45,15 @@ export class PublishController {
     if (result.kind === 'text') {
       const text = result.text ?? '';
       if (text.length === 0) throw new EmptyBodyError();
-      if (text.length > TG_TEXT_MAX) throw new PayloadTooLargeError(`text > ${TG_TEXT_MAX}`);
+      const composed = formatText(ctx.topic_name, text, result.parseMode);
+      if (composed.length > TG_TEXT_MAX) throw new PayloadTooLargeError(`text > ${TG_TEXT_MAX}`);
 
       const format = result.parseMode === 'MarkdownV2' ? 'markdown' : result.parseMode === 'HTML' ? 'html' : 'text';
       let telegramMessageId: number | null = null;
       let status: 'delivered' | 'failed' = 'delivered';
       let errorStr: string | null = null;
       try {
-        const r = await this.sender.sendText(ctx.chat_id, text, result.parseMode);
+        const r = await this.sender.sendText(ctx.chat_id, composed, result.parseMode);
         telegramMessageId = r.telegram_message_id;
       } catch (err: any) {
         status = 'failed';
@@ -89,7 +91,8 @@ export class PublishController {
 
     // image or file
     const bytes = result.bytes;
-    if (caption && caption.length > TG_CAPTION_MAX) {
+    const composedCaption = formatCaption(ctx.topic_name, caption);
+    if (composedCaption.length > TG_CAPTION_MAX) {
       throw new PayloadTooLargeError(`caption > ${TG_CAPTION_MAX}`);
     }
     const filename = resolveFilename({ filename: filenameHeader, mimeType: result.mimeType });
@@ -100,8 +103,8 @@ export class PublishController {
     let errorStr: string | null = null;
     try {
       const r = kind === 'image'
-        ? await this.sender.sendImage(ctx.chat_id, bytes, filename, caption)
-        : await this.sender.sendFile(ctx.chat_id, bytes, filename, caption);
+        ? await this.sender.sendImage(ctx.chat_id, bytes, filename, composedCaption)
+        : await this.sender.sendFile(ctx.chat_id, bytes, filename, composedCaption);
       telegramMessageId = r.telegram_message_id;
     } catch (err: any) {
       status = 'failed';
