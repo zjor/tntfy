@@ -134,3 +134,126 @@ describe('POST /publish/:topic — happy paths', () => {
     expect(args[2]).toMatch(/^attachment-[A-Za-z0-9_-]{8}\.bin$/);
   });
 });
+
+import { TelegramBlockedError, TelegramThrottledError, TelegramFailedError, FormatError } from './errors';
+
+describe('POST /publish/:topic — error paths', () => {
+  it('401 missing_token when no Authorization header', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ error: 'missing_token' });
+  });
+
+  it('401 invalid_token when token does not exist', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', 'Bearer tk_unknownnnnnnnnnnnnnnnn')
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({ error: 'invalid_token' });
+  });
+
+  it('404 topic_not_found when path topic differs', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/publish/other-topic')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: 'topic_not_found' });
+  });
+
+  it('400 empty_body on empty text', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send('');
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'empty_body' });
+  });
+
+  it('413 payload_too_large for text over 4096 chars', async () => {
+    const huge = 'a'.repeat(5000);
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send(huge);
+    expect(res.status).toBe(413);
+    expect(res.body).toMatchObject({ error: 'payload_too_large' });
+  });
+
+  it('413 payload_too_large from express body parser at 64kb', async () => {
+    const huge = 'a'.repeat(70 * 1024);
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send(huge);
+    expect(res.status).toBe(413);
+    expect(res.body).toMatchObject({ error: 'payload_too_large' });
+  });
+
+  it('415 unsupported_content_type for application/json', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json')
+      .send({ text: 'hi' });
+    expect(res.status).toBe(415);
+    expect(res.body).toMatchObject({ error: 'unsupported_content_type' });
+  });
+
+  it('502 telegram_blocked when Telegram returns 403', async () => {
+    sender.sendText.mockRejectedValueOnce(new TelegramBlockedError());
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(502);
+    expect(res.body).toEqual({ error: 'telegram_blocked' });
+    const db = app.get<any>(KYSELY);
+    const rows = await db.selectFrom('topic_messages').selectAll().where('topic_id', '=', topicId).execute();
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ status: 'failed', error: 'telegram_blocked' });
+  });
+
+  it('502 telegram_throttled with retry_after', async () => {
+    sender.sendText.mockRejectedValueOnce(new TelegramThrottledError(30));
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(502);
+    expect(res.body).toEqual({ error: 'telegram_throttled', retry_after: 30 });
+  });
+
+  it('502 telegram_failed with reason', async () => {
+    sender.sendText.mockRejectedValueOnce(new TelegramFailedError('boom'));
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/plain')
+      .send('hi');
+    expect(res.status).toBe(502);
+    expect(res.body).toEqual({ error: 'telegram_failed', reason: 'boom' });
+  });
+
+  it('400 format_error when Telegram rejects parse', async () => {
+    sender.sendText.mockRejectedValueOnce(new FormatError("can't parse entities"));
+    const res = await request(app.getHttpServer())
+      .post('/publish/deploys')
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'text/markdown')
+      .send('bad *markdown');
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({ error: 'format_error' });
+  });
+});
