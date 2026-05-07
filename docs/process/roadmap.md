@@ -39,13 +39,13 @@ Design spec: [`docs/project/specs/2026-05-07-phase-2-telegram-bot.md`](../projec
 
 Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project/specs/2026-05-07-phase-3-publish-api.md)
 
-- [ ] `POST /v1/publish/:topic` route + DTOs
-- [ ] Auth guard: bearer → topic lookup → path topic must match (`401` / `404`)
-- [ ] Content-Type dispatcher: `text/plain` / `text/markdown` / `text/html` → `sendMessage` with appropriate `parse_mode`
-- [ ] Binary dispatcher: `image/*` → `sendPhoto`, others → `sendDocument`
-- [ ] Size limits: text 4096, photo 10 MB, document 50 MB → `413`
-- [ ] Persist `topic_messages` row on success and failure
-- [ ] Map Telegram errors to `502 telegram_blocked` / `telegram_throttled` / `telegram_failed`
+- [x] `POST /v1/publish/:topic` route + DTOs
+- [x] Auth guard: bearer → topic lookup → path topic must match (`401` / `404`)
+- [x] Content-Type dispatcher: `text/plain` / `text/markdown` / `text/html` → `sendMessage` with appropriate `parse_mode`
+- [x] Binary dispatcher: `image/*` → `sendPhoto`, others → `sendDocument`
+- [x] Size limits: text 4096, photo 10 MB, document 50 MB → `413`
+- [x] Persist `topic_messages` row on success and failure
+- [x] Map Telegram errors to `502 telegram_blocked` / `telegram_throttled` / `telegram_failed`
 
 ### Phase 4 — Polish
 
