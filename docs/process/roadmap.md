@@ -37,6 +37,8 @@ Design spec: [`docs/project/specs/2026-05-07-phase-2-telegram-bot.md`](../projec
 
 ### Phase 3 — Publish API
 
+Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project/specs/2026-05-07-phase-3-publish-api.md)
+
 - [ ] `POST /v1/publish/:topic` route + DTOs
 - [ ] Auth guard: bearer → topic lookup → path topic must match (`401` / `404`)
 - [ ] Content-Type dispatcher: `text/plain` / `text/markdown` / `text/html` → `sendMessage` with appropriate `parse_mode`
