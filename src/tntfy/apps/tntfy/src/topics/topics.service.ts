@@ -1,0 +1,48 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { Kysely } from 'kysely';
+import { nanoid } from 'nanoid';
+import { KYSELY } from '../database/database.module';
+import type { Database } from '../database/schema';
+import { AuditLogger } from '../logging/audit.service';
+import { TokensService } from './tokens.service';
+import { validateTopicName } from './topic-name';
+import { DuplicateTopicError } from './errors';
+
+@Injectable()
+export class TopicsService {
+  constructor(
+    @Inject(KYSELY) private readonly db: Kysely<Database>,
+    private readonly tokens: TokensService,
+    private readonly audit: AuditLogger,
+  ) {}
+
+  async create(userId: string, name: string) {
+    validateTopicName(name);
+    const topicId = nanoid();
+    const tokenId = nanoid();
+    const tokenValue = this.tokens.generate();
+
+    try {
+      const { topic } = await this.db.transaction().execute(async (trx) => {
+        const topic = await trx
+          .insertInto('topics')
+          .values({ id: topicId, user_id: userId, name })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+        await trx
+          .insertInto('topic_tokens')
+          .values({ id: tokenId, topic_id: topic.id, token: tokenValue })
+          .execute();
+        return { topic };
+      });
+
+      this.audit.log({ op: 'topic.create', user_id: userId, topic_id: topic.id, name });
+      return { topic, token: tokenValue };
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        throw new DuplicateTopicError(name);
+      }
+      throw err;
+    }
+  }
+}
