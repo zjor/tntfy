@@ -49,3 +49,21 @@ describe('UsersService.createOrGet', () => {
     expect(calls[0]).toMatchObject({ op: 'user.create_or_get', ext_id: 99 });
   });
 });
+
+describe('UsersService.upsertProfile', () => {
+  it('updates username/first_name/last_name on conflict', async () => {
+    const svc = (await makeModule()).get(UsersService);
+    await svc.createOrGet({ id: 7, username: 'old', first_name: 'O', last_name: null });
+    const updated = await svc.upsertProfile({ id: 7, username: 'new', first_name: 'N', last_name: 'X' });
+    expect(updated.username).toBe('new');
+    expect(updated.first_name).toBe('N');
+    expect(updated.last_name).toBe('X');
+  });
+
+  it('inserts when user does not exist yet', async () => {
+    const svc = (await makeModule()).get(UsersService);
+    const u = await svc.upsertProfile({ id: 8, username: 'fresh', first_name: 'F', last_name: null });
+    expect(u.ext_id).toBe(8);
+    expect(u.username).toBe('fresh');
+  });
+});

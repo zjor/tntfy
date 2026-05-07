@@ -46,4 +46,26 @@ export class UsersService {
       .executeTakeFirstOrThrow();
     return existing;
   }
+
+  async upsertProfile(from: TelegramUserInput) {
+    const id = nanoid();
+    return await this.db
+      .insertInto('users')
+      .values({
+        id,
+        ext_id: from.id,
+        username: from.username ?? null,
+        first_name: from.first_name ?? null,
+        last_name: from.last_name ?? null,
+      })
+      .onConflict((oc) =>
+        oc.column('ext_id').doUpdateSet({
+          username: (eb) => eb.ref('excluded.username'),
+          first_name: (eb) => eb.ref('excluded.first_name'),
+          last_name: (eb) => eb.ref('excluded.last_name'),
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
 }
