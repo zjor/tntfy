@@ -45,4 +45,13 @@ export class TopicsService {
       throw err;
     }
   }
+
+  async listByUser(userId: string) {
+    return await this.db
+      .selectFrom('topics')
+      .selectAll()
+      .where('user_id', '=', userId)
+      .orderBy('created_at', 'desc')
+      .execute();
+  }
 }

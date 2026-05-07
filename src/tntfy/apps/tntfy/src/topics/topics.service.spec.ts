@@ -54,3 +54,27 @@ describe('TopicsService.create', () => {
     await expect(topics.create(other.id, 'deploys')).resolves.toBeDefined();
   });
 });
+
+describe('TopicsService.listByUser', () => {
+  it('returns the user\'s topics ordered newest-first', async () => {
+    const { topics, userId } = await setup();
+    await topics.create(userId, 'first');
+    await new Promise((r) => setTimeout(r, 5));
+    await topics.create(userId, 'second');
+    const list = await topics.listByUser(userId);
+    expect(list.map((t) => t.name)).toEqual(['second', 'first']);
+  });
+
+  it('returns empty array when user has none', async () => {
+    const { topics, userId } = await setup();
+    expect(await topics.listByUser(userId)).toEqual([]);
+  });
+
+  it('does not leak other users\' topics', async () => {
+    const { mod, topics, userId } = await setup();
+    const users = mod.get(UsersService);
+    const other = await users.createOrGet({ id: 2, username: null, first_name: null, last_name: null });
+    await topics.create(other.id, 'theirs');
+    expect(await topics.listByUser(userId)).toEqual([]);
+  });
+});
