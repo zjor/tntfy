@@ -78,3 +78,34 @@ describe('TopicsService.listByUser', () => {
     expect(await topics.listByUser(userId)).toEqual([]);
   });
 });
+
+describe('TopicsService.findByUserAndName', () => {
+  it('returns the topic when present', async () => {
+    const { topics, userId } = await setup();
+    const created = await topics.create(userId, 'deploys');
+    const found = await topics.findByUserAndName(userId, 'deploys');
+    expect(found.id).toBe(created.topic.id);
+  });
+
+  it('throws TopicNotFoundError when missing', async () => {
+    const { topics, userId } = await setup();
+    await expect(topics.findByUserAndName(userId, 'missing')).rejects.toThrow('topic not found');
+  });
+});
+
+describe('TopicsService.findByUserAndId', () => {
+  it('returns the topic when present and owned by user', async () => {
+    const { topics, userId } = await setup();
+    const created = await topics.create(userId, 'deploys');
+    const found = await topics.findByUserAndId(userId, created.topic.id);
+    expect(found.name).toBe('deploys');
+  });
+
+  it('throws TopicNotFoundError when topic belongs to a different user', async () => {
+    const { mod, topics, userId } = await setup();
+    const users = mod.get(UsersService);
+    const intruder = await users.createOrGet({ id: 999, username: null, first_name: null, last_name: null });
+    const created = await topics.create(userId, 'deploys');
+    await expect(topics.findByUserAndId(intruder.id, created.topic.id)).rejects.toThrow('topic not found');
+  });
+});

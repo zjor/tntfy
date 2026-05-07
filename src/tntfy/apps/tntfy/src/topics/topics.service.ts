@@ -6,7 +6,7 @@ import type { Database } from '../database/schema';
 import { AuditLogger } from '../logging/audit.service';
 import { TokensService } from './tokens.service';
 import { validateTopicName } from './topic-name';
-import { DuplicateTopicError } from './errors';
+import { DuplicateTopicError, TopicNotFoundError } from './errors';
 
 @Injectable()
 export class TopicsService {
@@ -53,5 +53,27 @@ export class TopicsService {
       .where('user_id', '=', userId)
       .orderBy('created_at', 'desc')
       .execute();
+  }
+
+  async findByUserAndName(userId: string, name: string) {
+    const row = await this.db
+      .selectFrom('topics')
+      .selectAll()
+      .where('user_id', '=', userId)
+      .where('name', '=', name)
+      .executeTakeFirst();
+    if (!row) throw new TopicNotFoundError(name);
+    return row;
+  }
+
+  async findByUserAndId(userId: string, topicId: string) {
+    const row = await this.db
+      .selectFrom('topics')
+      .selectAll()
+      .where('user_id', '=', userId)
+      .where('id', '=', topicId)
+      .executeTakeFirst();
+    if (!row) throw new TopicNotFoundError(topicId);
+    return row;
   }
 }
