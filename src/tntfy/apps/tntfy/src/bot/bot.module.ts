@@ -6,6 +6,7 @@ import { TopicsModule } from '../topics/topics.module';
 import { LoggerModule } from '../logging/logger.module';
 import { EnsureUserMiddleware } from './ensure-user.middleware';
 import { BotUpdate } from './bot.update';
+import { Callbacks } from './callbacks';
 import type { AppContext } from './context';
 
 @Module({
@@ -17,7 +18,7 @@ import type { AppContext } from './context';
       useFactory: () => ({ token: process.env.TELEGRAM_BOT_TOKEN as string }),
     }),
   ],
-  providers: [EnsureUserMiddleware, BotUpdate],
+  providers: [EnsureUserMiddleware, BotUpdate, Callbacks],
 })
 export class BotModule implements OnModuleInit {
   constructor(
