@@ -117,7 +117,7 @@ erDiagram
 
 Application invariants on top of the schema (not enforced by constraints):
 
-- One *active* token per topic at a time — `/topic-new-token` hard-deletes the old row before inserting the new one. The schema allows N rows; the app keeps it at 1.
+- One *active* token per topic at a time — `/rotate` hard-deletes the old row before inserting the new one. The schema allows N rows; the app keeps it at 1.
 - Topic names match `^[a-z0-9][a-z0-9-_]{1,63}$` — validated in `TopicsService` before insert.
 
 ## Publish request flow
@@ -161,9 +161,9 @@ sequenceDiagram
     end
 ```
 
-## Bot command flow — `/topic-create`
+## Bot command flow — `/create`
 
-Representative for the topic-management commands. Other commands (`/topic-list`, `/topic-new-token`, `/topic-remove`) follow the same shape with different DB operations.
+Representative for the topic-management commands. Other commands (`/list`, `/rotate`, `/remove`) follow the same shape with different DB operations.
 
 ```mermaid
 sequenceDiagram
@@ -173,7 +173,7 @@ sequenceDiagram
     participant Topics as TopicsService
     participant DB as Postgres
 
-    User->>TG: /topic-create deploys
+    User->>TG: /create deploys
     TG->>Bot: update (ext_id, args)
     Bot->>Topics: createTopic(ext_id, "deploys")
     Topics->>Topics: validate name regex

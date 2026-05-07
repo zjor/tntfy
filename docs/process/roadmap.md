@@ -30,10 +30,10 @@ Design spec: [`docs/project/specs/2026-05-07-phase-2-telegram-bot.md`](../projec
 - [x] Install `grammy` and `@grammyjs/nestjs`; wire long-polling
 - [x] `/start` — create-or-get user
 - [x] `/help` — list commands
-- [x] `/topic-create <name>` — validate, persist topic + token, reply with curl & Python snippets (token in `<tg-spoiler>`)
-- [x] `/topic-list` — list user's topics
-- [x] `/topic-new-token <name>` — rotate (hard-delete old, insert new)
-- [x] `/topic-remove <name>` — inline-keyboard confirmation, then cascade hard-delete
+- [x] `/create <name>` — validate, persist topic + token, reply with curl & Python snippets (token in `<tg-spoiler>`)
+- [x] `/list` — list user's topics
+- [x] `/rotate <name>` — rotate (hard-delete old, insert new)
+- [x] `/remove <name>` — inline-keyboard confirmation, then cascade hard-delete
 
 ### Phase 3 — Publish API
 

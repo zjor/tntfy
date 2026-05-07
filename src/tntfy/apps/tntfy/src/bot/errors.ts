@@ -13,7 +13,7 @@ export function formatError(err: unknown): string {
     return `you already have a topic '${err.name}'`;
   }
   if (err instanceof TopicNotFoundError) {
-    return `no topic '${err.name}', see /topic-list`;
+    return `no topic '${err.name}', see /list`;
   }
   return 'something went wrong, try again later';
 }

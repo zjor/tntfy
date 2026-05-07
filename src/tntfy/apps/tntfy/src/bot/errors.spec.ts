@@ -17,7 +17,7 @@ describe('formatError', () => {
   });
   it('formats TopicNotFoundError', () => {
     expect(formatError(new TopicNotFoundError('deploys'))).toBe(
-      "no topic 'deploys', see /topic-list",
+      "no topic 'deploys', see /list",
     );
   });
   it('falls back for unknown errors', () => {

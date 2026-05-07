@@ -16,8 +16,8 @@ Early development. v1 scope is documented in [`docs/project/prd.md`](docs/projec
 
 ## How it works
 
-- The Telegram bot is the control plane. You run `/start` to register, then manage topics with `/topic-create`, `/topic-list`, `/topic-new-token`, and `/topic-remove`.
-- Each topic gets its own bearer token. The `/topic-create` reply includes copy-paste-ready `curl` and Python snippets.
+- The Telegram bot is the control plane. You run `/start` to register, then manage topics with `/create`, `/list`, `/rotate`, and `/remove`.
+- Each topic gets its own bearer token. The `/create` reply includes copy-paste-ready `curl` and Python snippets.
 - The HTTP publish endpoint accepts plain text, Markdown, HTML, images, and arbitrary files. Each request returns the Telegram message id.
 - Single NestJS process: HTTP API + bot + workers in one deployable.
 

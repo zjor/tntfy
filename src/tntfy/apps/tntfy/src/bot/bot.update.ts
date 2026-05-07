@@ -15,10 +15,10 @@ const HELP_TEXT = [
   'Commands:',
   '  /start — register or refresh your account',
   '  /help — show this list',
-  '  /topic-create <name> — create a topic and get a curl snippet',
-  '  /topic-list — list your topics',
-  "  /topic-new-token <name> — rotate a topic's token",
-  '  /topic-remove <name> — delete a topic and its history',
+  '  /create <name> — create a topic and get a curl snippet',
+  '  /list — list your topics',
+  "  /rotate <name> — rotate a topic's token",
+  '  /remove <name> — delete a topic and its history',
   '',
   'Topic name rule: lowercase letters, digits, hyphen, underscore; 2–64 chars; must start with a letter or digit.',
 ].join('\n');
@@ -50,7 +50,7 @@ export class BotUpdate {
     await ctx.reply(HELP_TEXT);
   }
 
-  @Command('topic-create')
+  @Command('create')
   async onTopicCreate(@Ctx() ctx: AppContext) {
     if (!ctx.user) return;
     const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
@@ -68,19 +68,19 @@ export class BotUpdate {
     }
   }
 
-  @Command('topic-list')
+  @Command('list')
   async onTopicList(@Ctx() ctx: AppContext) {
     if (!ctx.user) return;
     const list = await this.topics.listByUser(ctx.user.id);
     if (list.length === 0) {
-      await ctx.reply('You have no topics yet. Create one with /topic-create <name>.');
+      await ctx.reply('You have no topics yet. Create one with /create <name>.');
       return;
     }
     const lines = list.map((t) => `• ${t.name} — created ${new Date(t.created_at as any).toISOString()}`);
     await ctx.reply(['Your topics:', ...lines].join('\n'));
   }
 
-  @Command('topic-new-token')
+  @Command('rotate')
   async onTopicNewToken(@Ctx() ctx: AppContext) {
     if (!ctx.user) return;
     const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();
@@ -96,7 +96,7 @@ export class BotUpdate {
     }
   }
 
-  @Command('topic-remove')
+  @Command('remove')
   async onTopicRemove(@Ctx() ctx: AppContext) {
     if (!ctx.user) return;
     const name = (typeof ctx.match === 'string' ? ctx.match : '').trim();

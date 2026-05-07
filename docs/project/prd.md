@@ -41,10 +41,10 @@ The Telegram bot is the control plane: users register, manage topics, and rotate
 ## User journey
 
 1. User opens the bot in Telegram and runs `/start` — a user record is created (or reused) and the DM `chat_id` is bound as the primary delivery channel.
-2. User runs `/topic-create deploys` — bot replies with a fresh bearer token plus copy-paste-ready `curl` and Python snippets pre-filled with the user's topic name and token. Token is wrapped in `<tg-spoiler>`.
+2. User runs `/create deploys` — bot replies with a fresh bearer token plus copy-paste-ready `curl` and Python snippets pre-filled with the user's topic name and token. Token is wrapped in `<tg-spoiler>`.
 3. User pastes the snippet into their app/cron/script. The notification arrives in their Telegram DM.
-4. If the token leaks: `/topic-new-token deploys` issues a new one and immediately invalidates the old.
-5. If the topic is no longer needed: `/topic-remove deploys` confirms via inline yes/no button, then deletes the topic, its tokens, and its message history.
+4. If the token leaks: `/rotate deploys` issues a new one and immediately invalidates the old.
+5. If the topic is no longer needed: `/remove deploys` confirms via inline yes/no button, then deletes the topic, its tokens, and its message history.
 
 ## API
 
@@ -119,7 +119,7 @@ Idempotent. Creates the user record if missing (storing `ext_id`, `username`, `f
 
 Lists all commands and brief usage examples.
 
-### `/topic-create <name>`
+### `/create <name>`
 
 Validates the name against `^[a-z0-9][a-z0-9-_]{1,63}$`. Rejects duplicates within the user's topics. Creates `topics` row plus an active `topic_tokens` row, then replies with:
 
@@ -128,15 +128,15 @@ Validates the name against `^[a-z0-9][a-z0-9-_]{1,63}$`. Rejects duplicates with
 - A `curl` example pre-filled with topic, token, and `PUBLIC_BASE_URL`
 - A Python example using `requests`
 
-### `/topic-list`
+### `/list`
 
-Lists the user's topics: name and creation date. Tokens are not shown — `/topic-new-token` is the path to retrieve a fresh one if the user has lost theirs.
+Lists the user's topics: name and creation date. Tokens are not shown — `/rotate` is the path to retrieve a fresh one if the user has lost theirs.
 
-### `/topic-new-token <name>`
+### `/rotate <name>`
 
 Hard-deletes the existing token row, inserts a new one, and replies with the new token. Old token starts returning `401` immediately.
 
-### `/topic-remove <name>`
+### `/remove <name>`
 
 Replies with an inline keyboard `[Yes, delete]` `[Cancel]`. On confirm: hard-delete `topics` row; FK cascades hard-delete `topic_tokens` and `topic_messages` rows. Replies "removed."
 
@@ -144,7 +144,7 @@ Replies with an inline keyboard `[Yes, delete]` `[Cancel]`. On confirm: hard-del
 
 - Invalid topic name → reply with the validation rule and an example
 - Topic-name conflict on create → reply "you already have a topic 'X'"
-- Topic not found on rotate/remove → reply "no topic 'X', see /topic-list"
+- Topic not found on rotate/remove → reply "no topic 'X', see /list"
 
 ## Data model
 
@@ -171,7 +171,7 @@ All primary keys are `nanoid` (21 chars, default alphabet, generated in applicat
 | `name` | text | `UNIQUE(user_id, name)` |
 | `created_at` | timestamptz | |
 
-Hard-deleted on `/topic-remove`.
+Hard-deleted on `/remove`.
 
 ### `topic_tokens`
 
@@ -238,9 +238,9 @@ Every state-changing operation emits a single structured (JSON) log line. Common
 | Operation | `op` | Additional fields |
 |---|---|---|
 | Bot `/start` | `user.create_or_get` | `ext_id` |
-| Bot `/topic-create` | `topic.create` | `topic_id`, `name` |
-| Bot `/topic-new-token` | `token.rotate` | `topic_id` |
-| Bot `/topic-remove` | `topic.delete` | `topic_id`, `name`, `cascaded_messages_count` |
+| Bot `/create` | `topic.create` | `topic_id`, `name` |
+| Bot `/rotate` | `token.rotate` | `topic_id` |
+| Bot `/remove` | `topic.delete` | `topic_id`, `name`, `cascaded_messages_count` |
 | API publish | `message.publish` | `topic_id`, `message_id`, `kind`, `status`, `telegram_message_id`, `bytes`, `latency_ms` |
 
 Failures share the same shape with an added `error` field.
@@ -300,7 +300,7 @@ The NestJS app reads from environment variables:
 |---|---|---|
 | `DATABASE_URL` | yes | Postgres connection string |
 | `TELEGRAM_BOT_TOKEN` | yes | From BotFather |
-| `PUBLIC_BASE_URL` | yes | Used in `/topic-create` snippets, e.g. `https://tntfy.example.com` |
+| `PUBLIC_BASE_URL` | yes | Used in `/create` snippets, e.g. `https://tntfy.example.com` |
 | `PORT` | no | Defaults to 3000 |
 
 ## Open items (post-v1)

@@ -47,13 +47,13 @@ describe('/help', () => {
     const ctx = makeStubCtx({ user: { id: 'x', ext_id: 100 } });
     await update.onHelp(ctx as any);
     const text = ctx.reply.mock.calls[0][0] as string;
-    for (const cmd of ['/start', '/help', '/topic-create', '/topic-list', '/topic-new-token', '/topic-remove']) {
+    for (const cmd of ['/start', '/help', '/create', '/list', '/rotate', '/remove']) {
       expect(text).toContain(cmd);
     }
   });
 });
 
-describe('/topic-create', () => {
+describe('/create', () => {
   it('creates the topic and replies with snippets', async () => {
     process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
     const { update, userId } = await setup();
@@ -87,7 +87,7 @@ describe('/topic-create', () => {
   });
 });
 
-describe('/topic-list', () => {
+describe('/list', () => {
   it('replies with empty-state hint when none', async () => {
     const { update, userId } = await setup();
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 } });
@@ -110,7 +110,7 @@ describe('/topic-list', () => {
   });
 });
 
-describe('/topic-new-token', () => {
+describe('/rotate', () => {
   it('rotates the token and replies with the new one', async () => {
     process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
     const { update, userId } = await setup();
@@ -129,10 +129,10 @@ describe('/topic-new-token', () => {
     const { update, userId } = await setup();
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'missing' });
     await update.onTopicNewToken(ctx as any);
-    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
+    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /list");
   });
 
-  it('/topic-new-token rejects invalid name format', async () => {
+  it('/rotate rejects invalid name format', async () => {
     const { update, userId } = await setup();
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'BAD_NAME' });
     await update.onTopicNewToken(ctx as any);
@@ -155,7 +155,7 @@ describe('error rethrow', () => {
   });
 });
 
-describe('/topic-remove', () => {
+describe('/remove', () => {
   it('replies with a confirmation prompt and inline keyboard', async () => {
     process.env.PUBLIC_BASE_URL = 'https://tntfy.example.com';
     const { update, userId } = await setup();
@@ -178,10 +178,10 @@ describe('/topic-remove', () => {
     const { update, userId } = await setup();
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'missing' });
     await update.onTopicRemove(ctx as any);
-    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /topic-list");
+    expect(ctx.reply.mock.calls[0][0]).toBe("no topic 'missing', see /list");
   });
 
-  it('/topic-remove rejects invalid name format', async () => {
+  it('/remove rejects invalid name format', async () => {
     const { update, userId } = await setup();
     const ctx = makeStubCtx({ user: { id: userId, ext_id: 100 }, match: 'BAD_NAME' });
     await update.onTopicRemove(ctx as any);

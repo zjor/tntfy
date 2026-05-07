@@ -11,7 +11,7 @@ Detailed design for [`docs/process/roadmap.md`](../../process/roadmap.md) Phase 
 
 ## Goals
 
-A user runs `/start`, then `/topic-create deploys`, and receives a `<tg-spoiler>`-wrapped bearer token plus a copy-paste `curl` snippet. They can list their topics, rotate a token, and remove a topic with confirmation. Every state-changing operation emits an audit log line. Phase 2 is purely the control plane — the publish endpoint is Phase 3.
+A user runs `/start`, then `/create deploys`, and receives a `<tg-spoiler>`-wrapped bearer token plus a copy-paste `curl` snippet. They can list their topics, rotate a token, and remove a topic with confirmation. Every state-changing operation emits an audit log line. Phase 2 is purely the control plane — the publish endpoint is Phase 3.
 
 ## Out of scope
 
@@ -50,7 +50,7 @@ apps/tntfy/src/
     ├── bot.module.ts
     ├── bot.update.ts            # @Update() class, methods per slash command
     ├── ensure-user.middleware.ts
-    ├── callbacks.ts             # /topic-remove confirm/cancel handlers
+    ├── callbacks.ts             # /remove confirm/cancel handlers
     ├── snippets.ts              # renderCurl(topic, token, baseUrl), renderPython(...)
     └── errors.ts                # user-facing message formatter for known errors
 ```
@@ -101,7 +101,7 @@ Update `src/infra/docker-compose.yml` and any local `.env.example` so contributo
 
 ## Command behavior
 
-All command handlers live as methods on a single `BotUpdate` class in `bot.update.ts`. Methods are `async`, return `Promise<void>`, and use `await ctx.reply(...)`. Each command is decorated with `@Command('start')`, `@Command('topic-create')`, etc.
+All command handlers live as methods on a single `BotUpdate` class in `bot.update.ts`. Methods are `async`, return `Promise<void>`, and use `await ctx.reply(...)`. Each command is decorated with `@Command('start')`, `@Command('create')`, etc.
 
 ### `/start`
 
@@ -112,7 +112,7 @@ All command handlers live as methods on a single `BotUpdate` class in `bot.updat
 
 Static reply listing all commands with one-line usage examples and the topic-name rule.
 
-### `/topic-create <name>`
+### `/create <name>`
 
 1. Parse `name` from `ctx.match` (grammY exposes the args string after the command).
 2. `topicName.validate(name)` — throws `InvalidTopicNameError` on regex mismatch.
@@ -141,11 +141,11 @@ Static reply listing all commands with one-line usage examples and the topic-nam
    ```
    Sent with `parse_mode: "HTML"`. Token, name, and base URL are HTML-escaped before interpolation.
 
-### `/topic-list`
+### `/list`
 
-`topicsService.listByUser(ctx.user.id)` — `SELECT name, created_at FROM topics WHERE user_id = $1 ORDER BY created_at DESC`. Reply with one line per topic. Empty list → "you have no topics; create one with `/topic-create <name>`".
+`topicsService.listByUser(ctx.user.id)` — `SELECT name, created_at FROM topics WHERE user_id = $1 ORDER BY created_at DESC`. Reply with one line per topic. Empty list → "you have no topics; create one with `/create <name>`".
 
-### `/topic-new-token <name>`
+### `/rotate <name>`
 
 1. Parse name; validate format.
 2. `topicsService.findByUserAndName(ctx.user.id, name)` — throws `TopicNotFoundError` if missing.
@@ -153,7 +153,7 @@ Static reply listing all commands with one-line usage examples and the topic-nam
 4. Audit `token.rotate`.
 5. Reply with the new token in `<tg-spoiler>` plus a fresh `curl` snippet.
 
-### `/topic-remove <name>`
+### `/remove <name>`
 
 1. Parse name; validate format.
 2. `topicsService.findByUserAndName(...)` — throws `TopicNotFoundError` if missing.
@@ -177,7 +177,7 @@ Static reply listing all commands with one-line usage examples and the topic-nam
 |---|---|
 | `InvalidTopicNameError` | "topic names must match `^[a-z0-9][a-z0-9-_]{1,63}$` — e.g. `deploys`, `app-1`" |
 | `DuplicateTopicError` | "you already have a topic '\<name\>'" |
-| `TopicNotFoundError` | "no topic '\<name\>', see /topic-list" |
+| `TopicNotFoundError` | "no topic '\<name\>', see /list" |
 | anything else | "something went wrong, try again later" — full error logged via Pino |
 
 A `bot.catch(...)` handler is the last-resort safety net, plus per-command `try { ... } catch (err) { await ctx.reply(formatError(err)); throw err }` so unhandled errors still surface and log.
@@ -255,10 +255,10 @@ All checkboxes in roadmap §Phase 2 ticked, and:
    ```
    start - register or refresh your account
    help - list commands
-   topic-create - create a topic and get a curl snippet
-   topic-list - list your topics
-   topic-new-token - rotate a topic's token
-   topic-remove - delete a topic and its history
+   create - create a topic and get a curl snippet
+   list - list your topics
+   rotate - rotate a topic's token
+   remove - delete a topic and its history
    ```
 2. From `src/infra/`: `docker compose up -d`.
 3. From `src/tntfy/`: `DATABASE_URL=postgres://tntfy:tntfy@localhost:6432/tntfy pnpm --filter @tntfy/app migrate`.
@@ -269,5 +269,5 @@ All checkboxes in roadmap §Phase 2 ticked, and:
    PUBLIC_BASE_URL=http://localhost:3000 \
    pnpm --filter @tntfy/app dev
    ```
-5. In Telegram: `/start` → `/help` → `/topic-create deploys` → copy the curl snippet (publishing returns 404 for now — the publish endpoint lands in Phase 3) → `/topic-list` → `/topic-new-token deploys` → `/topic-remove deploys` → confirm via inline button → `/topic-list` (now empty).
+5. In Telegram: `/start` → `/help` → `/create deploys` → copy the curl snippet (publishing returns 404 for now — the publish endpoint lands in Phase 3) → `/list` → `/rotate deploys` → `/remove deploys` → confirm via inline button → `/list` (now empty).
 6. Confirm the app log emits one structured `audit` line per state-changing command (per PRD §"Audit logging").
