@@ -188,7 +188,7 @@ docker compose up -d
 
 From `src/tntfy/`:
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: PASS for both cases in `db.spec.ts`.
 
@@ -313,7 +313,7 @@ describe('UsersService.createOrGet', () => {
 - [ ] **Step 2: Run, expect failure**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: FAIL — `UsersService` not found.
 
@@ -389,7 +389,7 @@ export class UsersModule {}
 - [ ] **Step 5: Run tests, expect pass**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: PASS for all three cases.
 
@@ -434,7 +434,7 @@ describe('UsersService.upsertProfile', () => {
 - [ ] **Step 2: Run, expect failure**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: FAIL — `upsertProfile` not defined.
 
@@ -467,7 +467,7 @@ async upsertProfile(from: TelegramUserInput) {
 - [ ] **Step 4: Run tests, expect pass**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: PASS.
 
@@ -801,7 +801,7 @@ export class TopicsModule {}
 - [ ] **Step 5: Run tests, expect pass**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: PASS.
 
@@ -1241,7 +1241,7 @@ export class AppModule {}
 
 From `src/tntfy/`:
 ```bash
-DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy \
+DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy \
 TELEGRAM_BOT_TOKEN=000:fake \
 PUBLIC_BASE_URL=http://localhost:3000 \
 pnpm --filter @tntfy/app build
@@ -1390,7 +1390,7 @@ export class BotModule implements OnModuleInit {
 - [ ] **Step 6: Run tests, expect pass**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: PASS.
 
@@ -2230,7 +2230,7 @@ git commit -m "feat(bot): bot.catch safety net for unhandled errors"
 - [ ] **Step 1: Run the full test suite**
 
 ```bash
-TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app test
+TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app test
 ```
 Expected: every test passes.
 
@@ -2255,10 +2255,10 @@ Expected: both PASS.
    topic-remove - delete a topic and its history
    ```
 3. From `src/infra/`, ensure Postgres is up: `docker compose up -d`
-4. From `src/tntfy/`, run migrations: `DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy pnpm --filter @tntfy/app migrate`
+4. From `src/tntfy/`, run migrations: `DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy pnpm --filter @tntfy/app migrate`
 5. Run the app:
    ```bash
-   DATABASE_URL=postgres://tntfy:tntfy@localhost:5432/tntfy \
+   DATABASE_URL=postgres://tntfy:tntfy@localhost:5433/tntfy \
    TELEGRAM_BOT_TOKEN=<token-from-botfather> \
    PUBLIC_BASE_URL=http://localhost:3000 \
    pnpm --filter @tntfy/app dev
