@@ -1,6 +1,11 @@
 import { Kysely, PostgresDialect } from 'kysely';
-import { Pool } from 'pg';
+import { Pool, types } from 'pg';
 import type { Database } from '../src/database/schema';
+
+// Parse int8 (OID 20) as JS number instead of string so that ext_id, content_length,
+// and telegram_message_id round-trip as numbers in tests and in app code.
+// Values are Telegram user IDs / message counts — safely within Number.MAX_SAFE_INTEGER.
+types.setTypeParser(20, (val) => parseInt(val, 10));
 
 let cached: Kysely<Database> | undefined;
 
