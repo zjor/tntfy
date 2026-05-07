@@ -16,12 +16,12 @@ Phased build:
 
 ### Phase 1 — Repo bootstrap & data layer
 
-- [ ] Generate Turborepo via `pnpm dlx create-turbo@latest` into `src/tntfy/`
-- [ ] Trim example apps; create `apps/tntfy/` (NestJS)
-- [ ] Add `src/infra/docker-compose.yml` for local Postgres
-- [ ] Wire Kysely as a NestJS provider; configure `DATABASE_URL`
-- [ ] Migrations: `users`, `topics`, `topic_tokens`, `topic_messages` (+ indexes)
-- [ ] `GET /v1/health` returns `200 { "status": "ok" }`
+- [x] Generate Turborepo via `pnpm dlx create-turbo@latest` into `src/tntfy/`
+- [x] Trim example apps; create `apps/tntfy/` (NestJS)
+- [x] Add `src/infra/docker-compose.yml` for local Postgres
+- [x] Wire Kysely as a NestJS provider; configure `DATABASE_URL`
+- [x] Migrations: `users`, `topics`, `topic_tokens`, `topic_messages` (+ indexes)
+- [x] `GET /v1/health` returns `200 { "status": "ok" }`
 
 ### Phase 2 — Telegram bot (control plane)
 

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tntfy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tntfy
+      POSTGRES_PASSWORD: tntfy
+      POSTGRES_DB: tntfy
+    ports:
+      - "5433:5432"
+    volumes:
+      - tntfy-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tntfy -d tntfy"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  tntfy-pg-data:

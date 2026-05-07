@@ -12,7 +12,7 @@ curl -H "Authorization: Bearer tk_..." \
 
 ## Status
 
-Early development. v1 scope is documented in [`docs/project/prd.md`](docs/project/prd.md); see [`docs/process/roadmap.md`](docs/process/roadmap.md) for what is being built and in what order. Not yet runnable.
+Early development. v1 scope is documented in [`docs/project/prd.md`](docs/project/prd.md); see [`docs/process/roadmap.md`](docs/process/roadmap.md) for what is being built and in what order. Phase 1 (data layer + health endpoint) is in place; bot and publish API are next.
 
 ## How it works
 
@@ -44,16 +44,31 @@ The `docs/` ↔ `src/` split is "anything that reads" vs. "anything that runs." 
 
 ## Development
 
-Setup instructions land here once the codebase is scaffolded. The short version will be:
+Requires Node.js 20+, pnpm 10+, and Docker.
 
 ```bash
-# 1. Start local Postgres
-cd src/infra && docker-compose up -d
+# 1. Start local Postgres (host port 5433 → container 5432)
+cd src/infra && docker compose up -d
 
-# 2. Install and run
-cd ../tntfy
-pnpm install
+# 2. Install workspace dependencies
+cd ../tntfy && pnpm install
+
+# 3. Configure the app
+cd apps/tntfy
+cp .env.example .env
+
+# 4. Run migrations
+pnpm migrate
+
+# 5. Run the app
 pnpm dev
+```
+
+Smoke test the health endpoint:
+
+```bash
+curl http://localhost:3000/v1/health
+# {"status":"ok"}
 ```
 
 ## License

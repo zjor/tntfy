@@ -1,0 +1,31 @@
+{
+  "name": "@tntfy/app",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "check-types": "tsc --noEmit",
+    "migrate": "tsx scripts/migrate.ts up",
+    "migrate:down": "tsx scripts/migrate.ts down"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "kysely": "^0.27.5",
+    "nanoid": "^5.0.9",
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "5.9.2"
+  }
+}
