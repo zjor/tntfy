@@ -1,6 +1,6 @@
 import { Global, Module, OnModuleInit } from '@nestjs/common';
 import { NestjsGrammyModule, InjectBot } from '@grammyjs/nestjs';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { Logger } from 'nestjs-pino';
 import { Bot } from 'grammy';
 import { UsersModule } from '../users/users.module';
 import { TopicsModule } from '../topics/topics.module';
@@ -27,7 +27,7 @@ export class BotModule implements OnModuleInit {
   constructor(
     @InjectBot() private readonly bot: Bot<AppContext>,
     private readonly ensureUser: EnsureUserMiddleware,
-    @InjectPinoLogger(BotModule.name) private readonly logger: PinoLogger,
+    private readonly logger: Logger,
   ) {}
 
   onModuleInit() {
@@ -39,6 +39,7 @@ export class BotModule implements OnModuleInit {
           update_id: err?.ctx?.update?.update_id,
         },
         'unhandled-bot-error',
+        BotModule.name,
       );
     });
   }
