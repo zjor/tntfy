@@ -20,6 +20,7 @@ import type { AppContext } from './context';
     }),
   ],
   providers: [EnsureUserMiddleware, BotUpdate, Callbacks],
+  exports: [NestjsGrammyModule],
 })
 export class BotModule implements OnModuleInit {
   constructor(
