@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Global, Module, OnModuleInit } from '@nestjs/common';
 import { NestjsGrammyModule, InjectBot } from '@grammyjs/nestjs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Bot } from 'grammy';
@@ -10,6 +10,7 @@ import { BotUpdate } from './bot.update';
 import { Callbacks } from './callbacks';
 import type { AppContext } from './context';
 
+@Global()
 @Module({
   imports: [
     LoggerModule,
