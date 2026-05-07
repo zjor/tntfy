@@ -76,4 +76,25 @@ export class TopicsService {
     if (!row) throw new TopicNotFoundError(topicId);
     return row;
   }
+
+  async removeById(userId: string, topicId: string) {
+    const topic = await this.findByUserAndId(userId, topicId);
+    const cascaded = await this.db.transaction().execute(async (trx) => {
+      const counted = await trx
+        .selectFrom('topic_messages')
+        .select((eb) => eb.fn.countAll<number>().as('n'))
+        .where('topic_id', '=', topic.id)
+        .executeTakeFirstOrThrow();
+      await trx.deleteFrom('topics').where('id', '=', topic.id).execute();
+      return Number(counted.n);
+    });
+    this.audit.log({
+      op: 'topic.delete',
+      user_id: userId,
+      topic_id: topic.id,
+      name: topic.name,
+      cascaded_messages_count: cascaded,
+    });
+    return { cascaded_messages_count: cascaded, name: topic.name };
+  }
 }

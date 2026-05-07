@@ -109,3 +109,38 @@ describe('TopicsService.findByUserAndId', () => {
     await expect(topics.findByUserAndId(intruder.id, created.topic.id)).rejects.toThrow('topic not found');
   });
 });
+
+describe('TopicsService.removeById', () => {
+  it('hard-deletes topic and cascades tokens + messages', async () => {
+    const { topics, userId, mod } = await setup();
+    const { topic } = await topics.create(userId, 'deploys');
+    const db = mod.get<any>(KYSELY);
+
+    await db
+      .insertInto('topic_messages')
+      .values([
+        { id: 'm1xxxxxxxxxxxxxxxxxxxx', topic_id: topic.id, kind: 'text', status: 'delivered' },
+        { id: 'm2xxxxxxxxxxxxxxxxxxxx', topic_id: topic.id, kind: 'text', status: 'failed' },
+      ])
+      .execute();
+
+    const result = await topics.removeById(userId, topic.id);
+    expect(result.cascaded_messages_count).toBe(2);
+    expect(result.name).toBe('deploys');
+
+    const t = await db.selectFrom('topics').selectAll().where('id', '=', topic.id).execute();
+    const tk = await db.selectFrom('topic_tokens').selectAll().where('topic_id', '=', topic.id).execute();
+    const m = await db.selectFrom('topic_messages').selectAll().where('topic_id', '=', topic.id).execute();
+    expect(t).toEqual([]);
+    expect(tk).toEqual([]);
+    expect(m).toEqual([]);
+  });
+
+  it('throws TopicNotFoundError when topic does not belong to user', async () => {
+    const { mod, topics, userId } = await setup();
+    const users = mod.get(UsersService);
+    const intruder = await users.createOrGet({ id: 999, username: null, first_name: null, last_name: null });
+    const { topic } = await topics.create(userId, 'deploys');
+    await expect(topics.removeById(intruder.id, topic.id)).rejects.toThrow('topic not found');
+  });
+});
