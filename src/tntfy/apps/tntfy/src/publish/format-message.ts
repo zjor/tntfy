@@ -23,14 +23,15 @@ export function formatText(
   if (parseMode === 'HTML') {
     return `<b>${topic}</b>\n\n${body}`;
   }
-  return `${topic}\n\n${body}`;
+  return `[${topic}]\n\n${body}`;
 }
 
 /**
  * Build the caption used when forwarding image/file payloads. Telegram does
- * not parse_mode the caption here, so the topic appears as plain text.
+ * not parse_mode the caption here, so the topic is bracketed for visual
+ * separation from the user-supplied caption.
  */
 export function formatCaption(topic: string, userCaption?: string): string {
-  if (!userCaption) return topic;
-  return `${topic}\n${userCaption}`;
+  if (!userCaption) return `[${topic}]`;
+  return `[${topic}]\n${userCaption}`;
 }

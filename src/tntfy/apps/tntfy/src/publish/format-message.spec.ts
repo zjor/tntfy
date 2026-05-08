@@ -21,9 +21,9 @@ describe('escapeMarkdownV2', () => {
 });
 
 describe('formatText', () => {
-  it('plain — prepends topic with double newline, no styling', () => {
+  it('plain — wraps topic in brackets to separate it from the body', () => {
     expect(formatText('deploys', 'Backup successful', 'none')).toBe(
-      'deploys\n\nBackup successful',
+      '[deploys]\n\nBackup successful',
     );
   });
 
@@ -41,12 +41,12 @@ describe('formatText', () => {
 });
 
 describe('formatCaption', () => {
-  it('returns just the topic when no user caption', () => {
-    expect(formatCaption('deploys')).toBe('deploys');
-    expect(formatCaption('deploys', '')).toBe('deploys');
+  it('returns the bracketed topic when no user caption', () => {
+    expect(formatCaption('deploys')).toBe('[deploys]');
+    expect(formatCaption('deploys', '')).toBe('[deploys]');
   });
 
-  it('prepends topic on its own line when caption is set', () => {
-    expect(formatCaption('deploys', 'see attached')).toBe('deploys\nsee attached');
+  it('prepends bracketed topic on its own line when caption is set', () => {
+    expect(formatCaption('deploys', 'see attached')).toBe('[deploys]\nsee attached');
   });
 });

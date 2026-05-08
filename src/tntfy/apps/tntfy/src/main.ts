@@ -1,8 +1,11 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { LegacyRouteConverter } from '@nestjs/core/router/legacy-route-converter';
 import { Logger } from 'nestjs-pino';
 import express from 'express';
 import { AppModule } from './app.module';
+
+LegacyRouteConverter.printWarning = () => {};
 
 const REQUIRED_ENV = ['DATABASE_URL', 'TELEGRAM_BOT_TOKEN', 'PUBLIC_BASE_URL'] as const;
 

@@ -21,6 +21,10 @@ Early development. v1 scope is documented in [`docs/project/prd.md`](docs/projec
 - The HTTP publish endpoint accepts plain text, Markdown, HTML, images, and arbitrary files. Each request returns the Telegram message id.
 - Single NestJS process: HTTP API + bot + workers in one deployable.
 
+## Guides
+
+- [Publishing messages](docs/guides/publishing.md) — `curl` recipes for every supported content type, plus headers, limits, and error codes.
+
 ## Stack
 
 - TypeScript, NestJS
@@ -32,7 +36,7 @@ Early development. v1 scope is documented in [`docs/project/prd.md`](docs/projec
 
 ```
 tntfy/
-├── docs/        # PRD, roadmap, ops content
+├── docs/        # PRD, roadmap, guides, ops content
 ├── src/
 │   ├── tntfy/   # turborepo: apps/tntfy/, packages/
 │   ├── infra/   # Dockerfile, docker-compose for local Postgres

@@ -54,6 +54,23 @@ Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project
 - [ ] Production `Dockerfile` in `src/infra/`
 - [ ] README dev-setup section verified end-to-end
 - [ ] `LICENSE` (MIT) at repo root
+- [ ] Isolate test database from local dev database (see below)
+
+#### Isolate test database from local dev database
+
+**Problem.** Running the test suite (e.g. `vitest run src/publish`) against `DATABASE_URL=postgres://tntfy:tntfy@localhost:6432/tntfy` wipes the local development database. `apps/tntfy/test/setup.ts` runs `TRUNCATE users, topics, topic_tokens, topic_messages RESTART IDENTITY CASCADE` in `beforeEach`, and `apps/tntfy/test/db.ts` falls back to `DATABASE_URL` when `TEST_DATABASE_URL` is not set, so a developer who has only `DATABASE_URL` exported loses their dev data on every test run.
+
+**Context.** Single Postgres instance at `localhost:6432` (via `src/infra/docker-compose.yml`), one logical DB `tntfy` shared by app and tests. There is no safeguard against pointing tests at it.
+
+**Proposed solution.**
+1. Create a separate logical database `tntfy_test` on the same Postgres container. One-time bootstrap for the existing volume:
+   ```
+   docker exec -i tntfy-postgres psql -U tntfy -d postgres -c "CREATE DATABASE tntfy_test OWNER tntfy;"
+   ```
+2. Add `src/infra/init/01-create-test-db.sql` (`CREATE DATABASE tntfy_test OWNER tntfy;`) and mount it at `/docker-entrypoint-initdb.d` in `docker-compose.yml` so fresh volumes get the test DB automatically.
+3. Add a guard in `apps/tntfy/test/db.ts` that parses the connection URL and throws if the database name does not end in `_test` — making it impossible to wipe dev data even with a misconfigured env.
+4. Drop a `.env.test` (or `.env.test.example`) in `apps/tntfy/` with `TEST_DATABASE_URL=postgres://tntfy:tntfy@localhost:6432/tntfy_test`, loaded by vitest so devs don't have to pass it on the command line.
+5. Update CLAUDE.md and README dev-setup to document the dev/test DB split.
 
 ## Next up (post-v1)
 

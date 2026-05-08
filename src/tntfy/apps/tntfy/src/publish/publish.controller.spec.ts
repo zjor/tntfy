@@ -78,7 +78,7 @@ describe('POST /publish/:topic — happy paths', () => {
       telegram_message_id: 100,
     });
     expect(res.body.id).toMatch(/^[A-Za-z0-9_-]{21}$/);
-    expect(sender.sendText).toHaveBeenCalledWith(100, 'deploys\n\nBackup successful', 'none');
+    expect(sender.sendText).toHaveBeenCalledWith(100, '[deploys]\n\nBackup successful', 'none');
     const db = app.get<any>(KYSELY);
     const row = await db.selectFrom('topic_messages').selectAll().where('id', '=', res.body.id).executeTakeFirstOrThrow();
     expect(row).toMatchObject({ kind: 'text', format: 'text', status: 'delivered', text_body: 'Backup successful' });
@@ -118,7 +118,7 @@ describe('POST /publish/:topic — happy paths', () => {
       100,
       expect.any(Buffer),
       'screenshot.png',
-      'deploys\nsee attached',
+      '[deploys]\nsee attached',
     );
   });
 
