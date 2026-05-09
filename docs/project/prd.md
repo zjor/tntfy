@@ -35,7 +35,7 @@ The Telegram bot is the control plane: users register, manage topics, and rotate
 - Server-side delivery retries or async queue
 - Tags, click actions, priorities, attachments-as-attachments
 - Web dashboard, landing page, Telegram mini-app
-- Helm chart, docker-compose for production, multi-tenant SaaS hosting
+- Multi-tenant SaaS hosting
 - Rate limiting and quotas (rely on Telegram's throttling for v1)
 
 ## User journey
@@ -279,11 +279,13 @@ tntfy/
 │   │   ├── apps/
 │   │   │   └── tntfy/                # NestJS app: API + bot + workers
 │   │   ├── packages/                 # empty for v1
+│   │   ├── Dockerfile                # production image
+│   │   ├── .dockerignore
 │   │   ├── package.json
 │   │   ├── pnpm-workspace.yaml
 │   │   └── turbo.json
 │   ├── infra/
-│   │   ├── Dockerfile                # production image for `apps/tntfy`
+│   │   ├── deploy/                   # Helm chart + deploy scripts
 │   │   └── docker-compose.yml        # local Postgres for development
 │   └── tools/                        # empty for v1
 ├── README.md

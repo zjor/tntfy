@@ -1,0 +1,3 @@
+tntfy deployed.
+
+  https://{{ .Values.ingress.host }}

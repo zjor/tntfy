@@ -25,7 +25,7 @@ async function main() {
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: path.resolve(__dirname, '..', 'migrations'),
+      migrationFolder: path.resolve(__dirname, '..', 'src', 'database', 'migrations'),
     }),
   });
 

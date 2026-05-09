@@ -51,7 +51,7 @@ Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project
 
 - [x] `@nestjs/swagger` mounted at `/docs`
 - [x] Structured JSON audit logs for every modifying op (per PRD table)
-- [ ] Production `Dockerfile` in `src/infra/`
+- [x] Production `Dockerfile` at `src/tntfy/Dockerfile` + `.dockerignore`; Helm chart + deploy scripts at `src/infra/deploy/` (untracked — not yet committed)
 - [ ] README dev-setup section verified end-to-end
 - [ ] `LICENSE` (MIT) at repo root
 - [ ] Isolate test database from local dev database (see below)
@@ -84,7 +84,7 @@ Items below are **not** in v1 — captured here so they don't get lost.
 
 ## Later
 
-- Helm chart and a production `docker-compose.prod.yml` for self-hosters
+- Production `docker-compose.prod.yml` for self-hosters (Helm chart already exists at `src/infra/deploy/chart/`)
 - Public landing page in `apps/landing/`
 - Telegram mini-app (TWA) in `apps/web/`
 - Rich payloads: tags, click actions, priorities, attachments-as-attachments

@@ -1,0 +1,16 @@
+replicaCount: 1
+
+image:
+  repository: zjor/tntfy
+  tag: latest
+
+service:
+  port: 3000
+
+ingress:
+  host: api.tntfy.royz.cc
+
+env:
+  PORT: "3000"
+
+secretName: tntfy-secrets

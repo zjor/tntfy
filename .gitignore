@@ -17,6 +17,10 @@ out/
 .env.*.local
 *.env
 
+# Kubeconfig
+.kube.yaml
+.kube/
+
 # Logs
 logs/
 *.log

@@ -5,7 +5,7 @@ import { Migrator, sql } from 'kysely';
 import type { Migration, MigrationProvider } from 'kysely';
 import { getTestDb, closeTestDb } from './db';
 
-const migrationsFolder = path.resolve(__dirname, '..', 'migrations');
+const migrationsFolder = path.resolve(__dirname, '..', 'src', 'database', 'migrations');
 
 /**
  * Custom migration provider that uses vite-aware dynamic `import()`.
