@@ -51,9 +51,12 @@ Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project
 
 - [x] `@nestjs/swagger` mounted at `/docs`
 - [x] Structured JSON audit logs for every modifying op (per PRD table)
-- [x] Production `Dockerfile` at `src/tntfy/Dockerfile` + `.dockerignore`; Helm chart + deploy scripts at `src/infra/deploy/` (untracked — not yet committed)
+- [x] Production `Dockerfile` at `src/tntfy/Dockerfile` + `.dockerignore`; Helm chart + deploy scripts at `src/infra/deploy/`; first deploy live at `api.tntfy.royz.cc`
+- [x] Auto-run Kysely migrations on app boot (`DatabaseModule.onModuleInit`)
+- [x] Configure bot in BotFather: `/setcommands` with the v1 command list (`start`, `help`, `create`, `list`, `rotate`, `remove`)
+- [x] Bot identity in BotFather: short description, long description (`/setdescription`, `/setabouttext`), avatar
 - [ ] README dev-setup section verified end-to-end
-- [ ] `LICENSE` (MIT) at repo root
+- [x] `LICENSE` (MIT) at repo root
 - [ ] Isolate test database from local dev database (see below)
 
 #### Isolate test database from local dev database

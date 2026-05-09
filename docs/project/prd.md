@@ -260,7 +260,7 @@ Failures share the same shape with an added `error` field.
   - Decision: grammY is the only modern, actively-maintained Telegram framework for Node.js as of 2026-05. Telegraf has been unmaintained since 2025-01; `node-telegram-bot-api` is a thin event-emitter without middleware composition.
 - **Database:** Postgres 16+
 - **Query builder:** [Kysely](https://kysely.dev) — typed SQL builder, no model objects, stays close to SQL. Wired into NestJS as a plain provider.
-- **Migrations:** Kysely's built-in migration runner (raw SQL or `db.schema` builder; up/down files in `apps/tntfy/migrations/`).
+- **Migrations:** Kysely's built-in migration runner (raw SQL or `db.schema` builder; files in `apps/tntfy/src/database/migrations/` so they ship inside the production image). `DatabaseModule.onModuleInit` runs `migrateToLatest()` on every app boot — idempotent via Kysely's migration ledger, so the running pod converges to the latest schema before serving traffic. Standalone CLI is available via `pnpm migrate` for ad-hoc local use.
 - **Bot transport:** long-polling. Permanent — webhook mode is not on the roadmap.
 - **API docs:** `@nestjs/swagger` at `/docs`
 - **License:** MIT
@@ -313,4 +313,4 @@ The NestJS app reads from environment variables:
 - Per-token rate limits (likely first when v1 sees real traffic)
 - Server-side retry policy for transient Telegram failures
 - Optional message TTL / size-bounded retention
-- Helm chart and `docker-compose.prod.yml` for self-hosters
+- `docker-compose.prod.yml` for self-hosters who don't run Kubernetes (Helm chart already lives at `src/infra/deploy/chart/`)
