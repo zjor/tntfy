@@ -49,8 +49,8 @@ Design spec: [`docs/project/specs/2026-05-07-phase-3-publish-api.md`](../project
 
 ### Phase 4 — Polish
 
-- [ ] `@nestjs/swagger` mounted at `/docs`
-- [ ] Structured JSON audit logs for every modifying op (per PRD table)
+- [x] `@nestjs/swagger` mounted at `/docs`
+- [x] Structured JSON audit logs for every modifying op (per PRD table)
 - [ ] Production `Dockerfile` in `src/infra/`
 - [ ] README dev-setup section verified end-to-end
 - [ ] `LICENSE` (MIT) at repo root

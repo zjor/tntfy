@@ -24,6 +24,7 @@ Early development. v1 scope is documented in [`docs/project/prd.md`](docs/projec
 ## Guides
 
 - [Publishing messages](docs/guides/publishing.md) — `curl` recipes for every supported content type, plus headers, limits, and error codes.
+- [Deployment](src/infra/deploy/README.md) — Docker build, Helm chart, and Kubernetes secrets.
 
 ## Stack
 
@@ -74,6 +75,14 @@ Smoke test the health endpoint:
 curl http://localhost:3000/v1/health
 # {"status":"ok"}
 ```
+
+Once the app is running, the Swagger UI is available at:
+
+```
+http://localhost:3000/docs
+```
+
+Use the **Authorize** button to paste a bearer token (`tk_...`) and try `POST /v1/publish/{topic}` directly from the browser.
 
 ## License
 

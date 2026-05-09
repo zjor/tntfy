@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { LegacyRouteConverter } from '@nestjs/core/router/legacy-route-converter';
 import { Logger } from 'nestjs-pino';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import express from 'express';
 import { AppModule } from './app.module';
 
@@ -47,6 +48,38 @@ async function bootstrap() {
     },
   );
   app.setGlobalPrefix('v1');
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('tntfy')
+    .setDescription('curl-to-Telegram notification service')
+    .setVersion('1')
+    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'tk_<token>' }, 'topic-token')
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+
+  // @nestjs/swagger applies the same schema to every content type in @ApiConsumes,
+  // so we patch the publish endpoint's requestBody directly after document generation.
+  const publishOp = (document.paths as any)['/v1/publish/{topic}']?.post;
+  if (publishOp) {
+    publishOp.requestBody = {
+      required: true,
+      content: {
+        'text/plain':               { schema: { type: 'string', example: 'Backup completed' } },
+        'text/markdown':            { schema: { type: 'string', example: '**Backup** completed' } },
+        'text/html':                { schema: { type: 'string', example: '<b>Backup</b> completed' } },
+        'image/png':                { schema: { type: 'string', format: 'binary' } },
+        'image/jpeg':               { schema: { type: 'string', format: 'binary' } },
+        'image/gif':                { schema: { type: 'string', format: 'binary' } },
+        'image/webp':               { schema: { type: 'string', format: 'binary' } },
+        'application/octet-stream': { schema: { type: 'string', format: 'binary' } },
+        'audio/mpeg':               { schema: { type: 'string', format: 'binary' } },
+        'video/mp4':                { schema: { type: 'string', format: 'binary' } },
+      },
+    };
+  }
+
+  SwaggerModule.setup('docs', app, document);
+
   app.enableShutdownHooks();
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);

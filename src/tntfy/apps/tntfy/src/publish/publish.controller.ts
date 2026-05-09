@@ -1,6 +1,11 @@
 import {
   Controller, Headers, HttpCode, Post, Req, UseFilters, UseGuards,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth, ApiHeader, ApiOperation, ApiParam,
+  ApiOkResponse, ApiUnauthorizedResponse, ApiNotFoundResponse,
+  ApiBadRequestResponse, ApiRequestTimeoutResponse, ApiTags,
+} from '@nestjs/swagger';
 import type { Request } from 'express';
 import { TelegramSender } from './telegram-sender.service';
 import { MessagesService } from './messages.service';
@@ -17,6 +22,8 @@ import { AuditLogger } from '../logging/audit.service';
 const TG_TEXT_MAX = 4096;
 const TG_CAPTION_MAX = 1024;
 
+@ApiTags('publish')
+@ApiBearerAuth('topic-token')
 @Controller('publish')
 @UseGuards(AuthGuard)
 @UseFilters(PublishExceptionFilter)
@@ -29,6 +36,15 @@ export class PublishController {
 
   @Post(':topic')
   @HttpCode(200)
+  @ApiOperation({ summary: 'Publish a message to a topic' })
+  @ApiParam({ name: 'topic', description: 'Topic name', example: 'my-alerts' })
+  @ApiHeader({ name: 'caption', required: false, description: 'Caption for image/file payloads (max 1024 chars)' })
+  @ApiHeader({ name: 'filename', required: false, description: 'Override filename for file payloads' })
+  @ApiOkResponse({ schema: { example: { id: 'abc123', topic: 'my-alerts', telegram_message_id: 42, delivered_at: '2026-05-09T12:00:00.000Z' } } })
+  @ApiUnauthorizedResponse({ schema: { example: { error: 'unauthorized' } } })
+  @ApiNotFoundResponse({ schema: { example: { error: 'topic_not_found' } } })
+  @ApiBadRequestResponse({ schema: { example: { error: 'empty_body' } } })
+  @ApiRequestTimeoutResponse({ schema: { example: { error: 'telegram_throttled' } } })
   async publish(
     @CurrentTopic() ctx: TopicContext,
     @Headers() headers: Record<string, string>,
